@@ -1,0 +1,2 @@
+gcc -Wall -g HOG.c bmp-reader.c extract_cell_features.c calc_block_features.c -o HOG -lm
+
