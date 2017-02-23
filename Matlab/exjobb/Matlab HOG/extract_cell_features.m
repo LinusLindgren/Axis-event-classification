@@ -31,10 +31,6 @@ for cj=0:7
                 %[maxDimDiff,index] = max(hypot(dxR,dxY),hypot(dxG,dyG),hypot(dxB,dyB));
                 maxDimAngs = angs(indx);
                 
-                if ci==0 && cj==0 && i == 5 && j ==6
-                   
-                    stop = 2;
-                end
                 if maxDimAngs < 0
                     unsigned_ang = maxDimAngs+pi;
                     
