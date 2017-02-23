@@ -24,7 +24,12 @@ void normalize(double* features, double* histogram, double* conc_histogram, int 
 	int i;
 	for(i = 0; i < 36;i++)
 	{
-		features[index+i] = conc_histogram[i] / norm;
+		double feature = conc_histogram[i] / norm;
+		if (isnan(feature))
+		{
+    			feature = 0.0;
+		}
+		features[index+i] = feature;
 	}
 }
 
