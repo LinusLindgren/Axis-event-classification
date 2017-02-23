@@ -31,7 +31,7 @@ unsigned char* readBMPImage()
 	
 
 	 FILE *streamIn;
-	 streamIn = fopen("./pedestrian.bmp", "rb");
+	 streamIn = fopen("../data/pedestrian.bmp", "rb");
 	 if (streamIn == (FILE *)0){
 	   printf("File opening error ocurred. Exiting program.\n");
 	   exit(0);

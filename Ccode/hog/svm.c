@@ -21,7 +21,7 @@ double* read_svm_model(double* bias)
 	FILE *fp;
 	double* beta= malloc(sizeof(double)*3780);
 	int i;
-	fp = fopen("svm_params", "rb");
+	fp = fopen("../data/svm_params", "rb");
 	fscanf(fp,"%lf\n",bias);
 	printf("%lf\n", *bias);
 	for(i=0; i <3780; i++)
