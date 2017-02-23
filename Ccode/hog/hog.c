@@ -7,7 +7,9 @@
 #include "bmp-reader.h"
 int main()
 {
-        unsigned char* image= readBMPImage();
+        unsigned char* image;
+	unsigned char * header;
+	readBMPImage(&header, &image);
 /*
 	int i,j;
 	for(i = 0; i < 128;i++)
