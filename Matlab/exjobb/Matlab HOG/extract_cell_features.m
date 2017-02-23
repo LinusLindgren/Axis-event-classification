@@ -15,12 +15,12 @@ for cj=0:7
                 if(~isBorder(cj,ci,i,j)) 
                 %Keep track of which cell we are operating in, therefore the
                 %ci*8+ (local cell calculation)
-                dxR = I(ci*8+i+1,cj*8+j,1) - I(ci*8+i-1,cj*8+j,1);
-                dxG = I(ci*8+i+1,cj*8+j,2) - I(ci*8+i-1,cj*8+j,2);
-                dxB = I(ci*8+i+1,cj*8+j,3) - I(ci*8+i-1,cj*8+j,3);
-                dyR = I(ci*8+i,cj*8+j+1,1) - I(ci*8+i,cj*8+j-1,1);
-                dyG = I(ci*8+i,cj*8+j+1,2) - I(ci*8+i,cj*8+j-1,2);
-                dyB = I(ci*8+i,cj*8+j+1,3) - I(ci*8+i,cj*8+j-1,3);
+                dyR = I(ci*8+i+1,cj*8+j,1) - I(ci*8+i-1,cj*8+j,1);
+                dyG = I(ci*8+i+1,cj*8+j,2) - I(ci*8+i-1,cj*8+j,2);
+                dyB = I(ci*8+i+1,cj*8+j,3) - I(ci*8+i-1,cj*8+j,3);
+                dxR = I(ci*8+i,cj*8+j+1,1) - I(ci*8+i,cj*8+j-1,1);
+                dxG = I(ci*8+i,cj*8+j+1,2) - I(ci*8+i,cj*8+j-1,2);
+                dxB = I(ci*8+i,cj*8+j+1,3) - I(ci*8+i,cj*8+j-1,3);
                 angs = ones(1,3);
                 mags = ones(1,3);
                 [angs(1),mags(1)] = cart2pol(dxR,dyR);
@@ -31,7 +31,10 @@ for cj=0:7
                 %[maxDimDiff,index] = max(hypot(dxR,dxY),hypot(dxG,dyG),hypot(dxB,dyB));
                 maxDimAngs = angs(indx);
                 
-                
+                if ci==0 && cj==0 && i == 5 && j ==6
+                   
+                    stop = 2;
+                end
                 if maxDimAngs < 0
                     unsigned_ang = maxDimAngs+pi;
                     
@@ -39,6 +42,7 @@ for cj=0:7
                     unsigned_ang = maxDimAngs;
                     
                 end
+                
                 bin_nbr = floor(unsigned_ang / (pi/9));
                 
                 rest = unsigned_ang/(pi/9) - bin_nbr;

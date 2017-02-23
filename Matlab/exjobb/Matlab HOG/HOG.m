@@ -1,10 +1,11 @@
 clear
 clc
-
+disp('training begun');
 
 SVMModel = train_test_model(); %Training and testing set are specified in the function.
+disp('training finished');
 %% mine
-c
+
 mine_positive(SVMModel);
 
 % 

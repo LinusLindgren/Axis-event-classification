@@ -3,7 +3,7 @@ function [ ] = mine_positive( SVMModel )
 %   Detailed explanation goes here
 imagefiles = dir('exjobb/data_mining_images/*.png');      
 nbrimagefiles = length(imagefiles);    % Number of files found
-
+figure;
 for ii=1:nbrimagefiles
     currentimage = imread(imagefiles(ii).name);
     workingimage = double(currentimage);
@@ -11,7 +11,13 @@ for ii=1:nbrimagefiles
     tic
     positives = parse_image(workingimage,SVMModel);
     toc
+    imagesc(currentimage);
+    hold on;
+    
+    
     for i=1:size(positives,1)
+        rectangle('Position',[positives(i,2) positives(i,1) 64 128], 'LineWidth',2, 'EdgeColor','g');
+        hold on;
         %disp('before write');
         fileNoExt = imagefiles(ii).name;
         fileNoExt = fileNoExt(1:(length(fileNoExt)-4));
