@@ -6,7 +6,7 @@ function [ SVMModel] = train_test_model()
 % DIR returns as a structure array.  You will need to use () and . to get
 % the file names.
 
-posimagefiles = dir('exjobb/pos_MIT/*.ppm');      
+posimagefiles = dir('exjobb/pos_MIT/*.png');      
 nposfiles = length(posimagefiles);    % Number of files found
 negimagefiles = dir('exjobb/neg_v3_mined/*.png');      
 nnegfiles = length(negimagefiles);    % Number of files found
@@ -51,6 +51,8 @@ SVMModel = fitclinear(trainObservations,trainLabels);
 %testIndex
 %score
 predictions = (pred_labels == testLabels);
+
+pred_labels
 %testLabels-pred_labels
 ratio = sum(predictions)/size(predictions,1)
 

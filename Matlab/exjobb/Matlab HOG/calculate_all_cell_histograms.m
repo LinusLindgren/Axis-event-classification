@@ -22,12 +22,12 @@ for cj=0:nbrHorSteps-1
                 if(~isBorder(cj,ci,i,j,nbrVerSteps,nbrHorSteps)) 
                 %Keep track of which cell we are operating in, therefore the
                 %ci*8+ (local cell calculation)
-                dxR = I(ci*8+i+1,cj*8+j,1) - I(ci*8+i-1,cj*8+j,1);
-                dxG = I(ci*8+i+1,cj*8+j,2) - I(ci*8+i-1,cj*8+j,2);
-                dxB = I(ci*8+i+1,cj*8+j,3) - I(ci*8+i-1,cj*8+j,3);
-                dyR = I(ci*8+i,cj*8+j+1,1) - I(ci*8+i,cj*8+j-1,1);
-                dyG = I(ci*8+i,cj*8+j+1,2) - I(ci*8+i,cj*8+j-1,2);
-                dyB = I(ci*8+i,cj*8+j+1,3) - I(ci*8+i,cj*8+j-1,3);
+                dyR = I(ci*8+i+1,cj*8+j,1) - I(ci*8+i-1,cj*8+j,1);
+                dyG = I(ci*8+i+1,cj*8+j,2) - I(ci*8+i-1,cj*8+j,2);
+                dyB = I(ci*8+i+1,cj*8+j,3) - I(ci*8+i-1,cj*8+j,3);
+                dxR = I(ci*8+i,cj*8+j+1,1) - I(ci*8+i,cj*8+j-1,1);
+                dxG = I(ci*8+i,cj*8+j+1,2) - I(ci*8+i,cj*8+j-1,2);
+                dxB = I(ci*8+i,cj*8+j+1,3) - I(ci*8+i,cj*8+j-1,3);
                 angs = ones(1,3);
                 mags = ones(1,3);
                 [angs(1),mags(1)] = cart2pol(dxR,dyR);
