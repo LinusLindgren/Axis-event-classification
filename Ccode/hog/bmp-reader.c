@@ -42,10 +42,9 @@ void readBMPImage(unsigned char** header, unsigned char** rbg_values)
 
 
 	//int image[8192][3]; // first number here is 8192 pixels in my image, 3 is for RGB values
-	unsigned char* image = malloc(8192*3*sizeof(char));
 	
 	//138 bytes for header, hardcoded right now fix later
-	*header = malloc(138*sizeof(char));
+	*header = malloc(54*sizeof(char));
 
 	 FILE *streamIn;
 	 streamIn = fopen("../data/pedestrian.bmp", "rb");
@@ -55,10 +54,38 @@ void readBMPImage(unsigned char** header, unsigned char** rbg_values)
 	 }
 	
 	 int i,j;
-	 for(i=0;i<138 ;i++)  // strip out BMP header
+	 for(i=0;i<54 ;i++)  // strip out BMP header
 	{
 		(*header)[i] = getc(streamIn);
 	}
+	
+	//unsigned long int height = (*header)[22];
+	//unsigned long int width = (*header)[18];
+	//unsigned long int offset = (*header)[10];
+	//int test;
+	//isscanf((*header)+18,"%d",&test);
+	int width = *((int *) &(*header)[18]);
+	int height = *((int *) &(*header)[22]);
+	int offset = *((int *) &(*header)[10]);
+	//int test = 0;
+	//long int heighttest = ((*header)[10]<<24)|
+	//((*header)[11]<<16)|
+	//((*header)[12]<<8)|
+	//((*header)[13]);
+	//sscanf((*header)+10, "%d", &test);
+	/*for (i = 1; i < 4; i++ ) {
+		offset <= 8;
+		offset += (*header)[10+i];
+		width << 8;    
+		width += (*header)[18+i];
+		height << 8;
+		height += (*header)[22+i];
+	
+	}
+	printf("test %d",test);
+*/
+	for(i=0; i < offset-54;i++)getc(streamIn);
+	unsigned char* image = malloc(height*width*3*sizeof(char));
 	 for(i=127; i>= 0;i--){    // foreach pixel
 	 	for(j=0; j < 64; j++)
 		{
