@@ -7,10 +7,13 @@ fclose(fileID);
 
 
 %% Write Beta to file
-load('beta.mat');
-load('bias.mat');
+load('SVMless.mat');
+%load('beta.mat');
+%load('bias.mat');
+beta = SVMModel.Beta;
+bias = SVMModel.Bias;
 
-fileID = fopen('beta','w');
+fileID = fopen('svm_params','w');
 formatSpec = '%f\n';
 nbrElements = size(beta,1);
 
@@ -19,6 +22,7 @@ for i=1:nbrElements
     
     fprintf(fileID,formatSpec,beta(i));
 end
+fclose(fileID);
 %% Write histogram to file
 load('cell_features.mat');
 fileID = fopen('histogram_parsed.txt','w');
