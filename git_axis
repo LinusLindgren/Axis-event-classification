@@ -1,0 +1,2 @@
+env | grep https_proxy
+export https_proxy=proxycluster:3128
