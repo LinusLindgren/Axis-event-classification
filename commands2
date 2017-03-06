@@ -1,0 +1,62 @@
+mikaeli@lnxlinusli> pwd                                                       ~
+/home/mikaeli
+mikaeli@lnxlinusli> cd newbiz                                                 ~
+mikaeli@lnxlinusli> ls                                                 ~/newbiz
+bhpacsconf*	    jatmpdev*		     nhqart*
+bhpacsconf_aperio*  jenkinsjobs*	     nhtrouble*
+btfiles/	    jjconfigure_up_to_date*  obsolete/
+camera/		    labnet_peers*	     pacs_db_decrypt/
+cda.sh		    libnb.sh		     pacsed*
+cmtool*		    lz4*		     pdtelnet*
+codestyle/	    Makefile		     prepare_lfp_upgrade*
+db-sandbox*	    maping*		     prototype/
+dump_dbs.sh*	    marungdb*		     rcore*
+ewscp*		    mbgencgn.sh*	     README
+ewsshcmd*	    mbgetsyslog*	     releasenote_open_urls.sh*
+funstuff/	    meiorsetup*		     rfetchatf*
+gdb_scripts/	    melangreview*	     rlink*
+git-aclone*	    micpuoverload*	     rlog*
+git-citmp*	    midown*		     roaprofile*
+git-nbtaginc*	    mimount*		     roconfgerrit*
+go/		    missh*		     rohwconf*
+gyshowip*	    nbbarcode*		     rorsyslog*
+gyup*		    nbbt*		     rorungdb_fe*
+init_envd*	    nbconfci*		     rstack*
+jaapicall*	    nbdirs*		     rtree*
+jababeltrace.php*   nbfindpackage*	     rtree_old*
+jababeltrace.sh*    nbflash*		     rup*
+jabuild*	    nbindent*		     rupl*
+jacheckdut*	    nb_init_env*	     stacks*
+jadeps*		    nbjsoncall*		     test_alarmfilters_alarm_topics.csv
+jadeps.mak	    nblunch*		     test_alarmfilters.sh*
+jalttng_dut.sh*     nbpython/		     troublemaker-chrome-plugin/
+jalttng_host*	    nbrevup*		     vg_setup*
+janfetchnskey*	    nb_set_env*		     web/
+jangpioconfig*	    nb_settings2env*	     xcam-scan*
+janopeninbrowser*   nbssh*		     xconfigure*
+jantransfer*	    nbtroubledown*	     xcscope*
+japool.cgi*	    nhoverride*		     xln2repo*
+jastacks@	    nhpacstool*
+mikaeli@lnxlinusli> pwd                                                ~/newbiz
+/home/mikaeli/newbiz
+mikaeli@lnxlinusli> cd ..                                              ~/newbiz
+mikaeli@lnxlinusli> cd repo/A8104_Mulan_5_80_DB_A8104_BT/apps/posd            ~
+mikaeli@lnxlinusli> ls *.service  ~/repo/A8104_Mulan_5_80_DB_A8104_BT/apps/posd
+positioning.service
+mikaeli@lnxlinusli> cat positioning.service 
+[Unit]
+Description=Positioning functions
+Before=monolith.service
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/posd
+ExecStartPre=/bin/sh -c 'echo 200 > /sys/bus/iio/devices/iio\:device0/sampling_frequency'
+Restart=always
+
+mikaeli@lnxlinusli> cd ..         ~/repo/A8104_Mulan_5_80_DB_A8104_BT/apps/posd
+Completing corrections
+_flasher  _flex     _floppy   _flowadm
+Completing original
+nb_fl
+

@@ -1,0 +1,4 @@
+scp posd root@172.25.11.239:/tmp/.
+
+ps | grep -i pos
+systemctl stop positioning

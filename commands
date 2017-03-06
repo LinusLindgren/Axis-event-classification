@@ -1,0 +1,574 @@
+mikaeli@lnxlinusli> gcc -Wall -g hog.c bmp-reader.c svm.c extract_cell_features.c calc_block_features.c -o hog -lm
+bmp-reader.c: In function ‘readBMPImage’:
+bmp-reader.c:80:21: error: ‘test’ undeclared (first use in this function)
+  printf("(%li,%li)",test,height);
+                     ^
+bmp-reader.c:80:21: note: each undeclared identifier is reported only once for each function it appears in
+[1] mikaeli@lnxlinusli> cd                ~/Axis-event-classification/Ccode/hog
+mikaeli@lnxlinusli> mkdir repo                                                ~
+mikaeli@lnxlinusli> cd repo                                                   ~
+mikaeli@lnxlinusli> rtree                                                ~/repo
+zsh: correct 'rtree' to 'tee' [nyae]? n
+zsh: command not found: rtree
+[127] mikaeli@lnxlinusli> cd ..                                          ~/repo
+mikaeli@lnxlinusli> git clone https://mikaeli@gittools.se.axis.com/gerrit/a/tools/dev-utils/newbiz
+Cloning into 'newbiz'...
+Password for 'https://mikaeli@gittools.se.axis.com': 
+remote: Counting objects: 851, done
+remote: Finding sources: 100% (2836/2836)
+remote: Total 2836 (delta 1455), reused 2748 (delta 1455)
+Receiving objects: 100% (2836/2836), 1.07 MiB | 0 bytes/s, done.
+Resolving deltas: 100% (1455/1455), done.
+Checking connectivity... done.
+mikaeli@lnxlinusli> cd newbiz                                                 ~
+mikaeli@lnxlinusli> ls                                                 ~/newbiz
+bhpacsconf*	    jatmpdev*		     nhqart*
+bhpacsconf_aperio*  jenkinsjobs*	     nhtrouble*
+btfiles/	    jjconfigure_up_to_date*  obsolete/
+camera/		    labnet_peers*	     pacs_db_decrypt/
+cda.sh		    libnb.sh		     pacsed*
+cmtool*		    lz4*		     pdtelnet*
+codestyle/	    Makefile		     prepare_lfp_upgrade*
+db-sandbox*	    maping*		     prototype/
+dump_dbs.sh*	    marungdb*		     rcore*
+ewscp*		    mbgencgn.sh*	     README
+ewsshcmd*	    mbgetsyslog*	     releasenote_open_urls.sh*
+funstuff/	    meiorsetup*		     rfetchatf*
+gdb_scripts/	    melangreview*	     rlink*
+git-aclone*	    micpuoverload*	     rlog*
+git-citmp*	    midown*		     roaprofile*
+git-nbtaginc*	    mimount*		     roconfgerrit*
+go/		    missh*		     rohwconf*
+gyshowip*	    nbbarcode*		     rorsyslog*
+gyup*		    nbbt*		     rorungdb_fe*
+init_envd*	    nbconfci*		     rstack*
+jaapicall*	    nbdirs*		     rtree*
+jababeltrace.php*   nbfindpackage*	     rtree_old*
+jababeltrace.sh*    nbflash*		     rup*
+jabuild*	    nbindent*		     rupl*
+jacheckdut*	    nb_init_env*	     stacks*
+jadeps*		    nbjsoncall*		     test_alarmfilters_alarm_topics.csv
+jadeps.mak	    nblunch*		     test_alarmfilters.sh*
+jalttng_dut.sh*     nbpython/		     troublemaker-chrome-plugin/
+jalttng_host*	    nbrevup*		     vg_setup*
+janfetchnskey*	    nb_set_env*		     web/
+jangpioconfig*	    nb_settings2env*	     xcam-scan*
+janopeninbrowser*   nbssh*		     xconfigure*
+jantransfer*	    nbtroubledown*	     xcscope*
+japool.cgi*	    nhoverride*		     xln2repo*
+jastacks@	    nhpacstool*
+mikaeli@lnxlinusli> cd ..                                              ~/newbiz
+mikaeli@lnxlinusli> vi .zshrc                                                 ~
+mikaeli@lnxlinusli> export PATH=$PATH:/home/mikaeli/newbiz                    ~
+mikaeli@lnxlinusli> echo $PATH                                                ~
+/home/mikaeli/bin:/home/mikaeli/bin.linux:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/X11R6/bin:/usr/bin/mh:/usr/games:/usr/local/cris:/home/mikaeli/newbiz
+mikaeli@lnxlinusli> cd repo                                                   ~
+mikaeli@lnxlinusli> rtree                                                ~/repo
+The authenticity of host '[dbtools01.se.axis.com]:29420 ([10.0.8.136]:29420)' can't be established.
+RSA key fingerprint is 73:46:9f:8a:ef:e3:55:78:e5:c8:e0:30:3f:06:fc:3e.
+Are you sure you want to continue connecting (yes/no)? yes
+1. NB/A1001_CVP_lift
+2. NB/A1001_DDD
+3. NB/A1001_Door_control_refactoring
+4. NB/A1001_Hid_mobile
+5. NB/A1001_HumanTimeInEvent
+6. NB/A1001_iana_timezone
+7. NB/A1001_Master
+8. NB/A1001_NbBuild02_test
+9. NB/A1001_PRA
+10. NB/A1001_Pre_master
+11. NB/A1001_Rest_API
+12. NB/A1001_Telcred
+13. NB/A8004_Fadde
+14. NB/A8004_Mulan_5_80
+15. NB/A8004_Mulan_5_80_SR
+16. NB/A8004_Mulan_CI_LFP
+17. NB/A8004_Mulan_SR
+18. NB/A8004_NbBuild02_test
+19. NB/A8104_Mulan_5_80
+20. NB/A8105_6_50_update
+21. NB/A8105_AFI
+22. NB/A8105_Mulan_5_80_R27
+23. NB/A9188_1_00_0
+24. NB/A9188_Beta
+25. NB/A9188_Master
+26. NB/A9188_NbBuild02_test
+27. NB/A9188_Pre_master
+28. NB/A9188_PreMaster_prodstub
+29. NB/A9188_Supervised_input
+30. NB/C1004_6_50_update
+31. NB/C1004_acap
+32. NB/C1004_master
+33. NB/C3003_6_50_update
+34. NB/C3003_acap
+35. NB/C3003_master
+36. NB/C8013_bdmdemo
+0. Back
+Select project: 19
+1. NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BH
+2. NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT
+3. NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_CO
+4. NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_CPPCHECK
+5. NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_FT
+6. NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_UT
+7. NB/A8104_Mulan_5_80/PRODUCTS/FWRT_A8104_FW
+0. Back
+Select job: 2
+1. BASE build
+2. BASE build image
+3. GERRIT build
+4. GERRIT build image
+5. OVERRIDE build
+6. OVERRIDE build image
+0. Back
+Select download: 1
+Downloading NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT #1617 to /home/mikaeli/repo/A8104_Mulan_5_80_DB_A8104_BT
+Download started - please be patient this usually take minutes...
+X11 forwarding request failed on channel 0
+
+SUCCESS: Build unpacked to /home/mikaeli/repo/A8104_Mulan_5_80_DB_A8104_BT/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT!
+ - /home/mikaeli/repo/A8104_Mulan_5_80_DB_A8104_BT/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT is NOT the original AXIS_TOP_DIR - all incremental build attemps will likely fail.
+mikaeli@lnxlinusli> ls                                                   ~/repo
+A8104_Mulan_5_80_DB_A8104_BT/
+mikaeli@lnxlinusli> cd A8104_Mulan_5_80_DB_A8104_BT                      ~/repo
+mikaeli@lnxlinusli> l                       ~/repo/A8104_Mulan_5_80_DB_A8104_BT
+total 166640
+-rw-r--r--  1 mikaeli axusers      195 Feb 23 20:04 ae_conf1.conf.tmp
+-rw-r--r--  1 mikaeli axusers      201 Feb 23 20:04 ae_conf2.conf.tmp
+-rw-r--r--  1 mikaeli axusers      201 Feb 23 20:04 ae_conf3.conf.tmp
+-rw-r--r--  1 mikaeli axusers      240 Feb 23 20:04 ae_conf4.conf.tmp
+-rw-r--r--  1 mikaeli axusers      243 Feb 23 20:04 ae_conf5.conf.tmp
+-rw-r--r--  1 mikaeli axusers      244 Feb 23 20:04 ae_conf6.conf.tmp
+-rw-r--r--  1 mikaeli axusers      229 Feb 23 20:04 ae_conf7.conf.tmp
+-rw-r--r--  1 mikaeli axusers      193 Feb 23 20:04 ae_conf8.conf.tmp
+-rw-r--r--  1 mikaeli axusers      193 Feb 23 20:04 ae_conf9.conf.tmp
+-rw-r--r--  1 mikaeli axusers      183 Feb 23 20:04 ae_rule1.conf.tmp
+-rw-r--r--  1 mikaeli axusers      440 Feb 23 20:04 ae_rule1_event.xml.tmp
+-rw-r--r--  1 mikaeli axusers      191 Feb 23 20:04 ae_rule2.conf.tmp
+-rw-r--r--  1 mikaeli axusers      361 Feb 23 20:04 ae_rule2_event.xml.tmp
+-rw-r--r--  1 mikaeli axusers      192 Feb 23 20:04 ae_rule3.conf.tmp
+-rw-r--r--  1 mikaeli axusers      362 Feb 23 20:04 ae_rule3_event.xml.tmp
+-rw-r--r--  1 mikaeli axusers      183 Feb 23 20:04 ae_rule4.conf.tmp
+-rw-r--r--  1 mikaeli axusers      290 Feb 23 20:04 ae_rule4_property_0.xml.tmp
+-rw-r--r--  1 mikaeli axusers      186 Feb 23 20:04 ae_rule5.conf.tmp
+-rw-r--r--  1 mikaeli axusers      293 Feb 23 20:04 ae_rule5_property_0.xml.tmp
+-rw-r--r--  1 mikaeli axusers      190 Feb 23 20:04 ae_rule6.conf.tmp
+-rw-r--r--  1 mikaeli axusers      292 Feb 23 20:04 ae_rule6_property_0.xml.tmp
+-rw-r--r--  1 mikaeli axusers      186 Feb 23 20:04 ae_rule7.conf.tmp
+-rw-r--r--  1 mikaeli axusers      293 Feb 23 20:04 ae_rule7_property_0.xml.tmp
+-rw-r--r--  1 mikaeli axusers      198 Feb 23 20:04 ae_rule8.conf.tmp
+-rw-r--r--  1 mikaeli axusers      292 Feb 23 20:04 ae_rule8_property_0.xml.tmp
+-rw-r--r--  1 mikaeli axusers      196 Feb 23 20:04 ae_rule9.conf.tmp
+-rw-r--r--  1 mikaeli axusers      290 Feb 23 20:04 ae_rule9_property_0.xml.tmp
+drwxr-xr-x 32 mikaeli axusers     4096 Feb 23 19:47 apps/
+-rw-r--r--  1 mikaeli axusers    29513 Feb 23 19:42 axis_config.h
+-rw-r--r--  1 mikaeli axusers    29365 Feb 23 19:59 axis_config_unquoted.h
+drwxr-xr-x  9 mikaeli axusers     4096 Feb 23 19:55 build_env/
+-rwxr-xr-x  1 mikaeli axusers    18498 Feb 23 19:42 configure*
+drwxr-xr-x  9 mikaeli axusers     4096 Feb 23 19:42 configure-files/
+drwxr-xr-x  4 mikaeli axusers     4096 Feb 23 19:47 doc/
+-rw-r--r--  1 mikaeli axusers    95839 Feb 23 19:47 fetched_build.sh
+-rw-r--r--  1 mikaeli axusers    22265 Feb 23 19:47 fetched__divert_subdirs.log
+-rw-r--r--  1 mikaeli axusers      628 Feb 23 19:47 fetched__divert_tools.log
+-rw-r--r--  1 mikaeli axusers     1755 Feb 23 19:47 fetched__divert_variable_FUNCTESTS.log
+-rw-r--r--  1 mikaeli axusers      146 Feb 23 19:46 fetched__divert_variable_PERFTESTS.log
+-rw-r--r--  1 mikaeli axusers      946 Feb 23 19:48 fetched_.log
+-rw-r--r--  1 mikaeli axusers    25740 Feb 23 19:48 fetched.log
+-rw-r--r--  1 mikaeli axusers     7963 Feb 23 19:47 fetched_test.sh
+-rw-r--r--  1 mikaeli axusers 68151868 Feb 23 21:41 fimage
+-rwxr-xr-x  1 mikaeli axusers       22 Feb 23 21:33 firmware.match*
+-rw-r--r--  1 mikaeli axusers      840 Feb 23 21:40 fstab
+-rw-r--r--  1 mikaeli axusers      144 Feb 23 21:40 fwinfo.bin
+-rw-r--r--  1 mikaeli axusers      144 Feb 23 20:13 fwinfo_unpatched.bin
+-rw-r--r--  1 mikaeli axusers      184 Feb 23 20:13 hwparams.bin
+-rw-r--r--  1 mikaeli axusers     1860 Feb 23 19:47 init_env
+-rw-r--r--  1 mikaeli axusers     4839 Feb 23 20:04 install_actionrules.mak.tmp
+-rw-r--r--  1 mikaeli axusers      194 Feb 23 20:04 install_ae_defaults.service.tmp
+-rw-r--r--  1 mikaeli axusers      272 Feb 23 20:04 install_ae_defaults.sh.tmp
+-rw-r--r--  1 mikaeli axusers     1426 Feb 23 20:04 install_audiotestfiles.mak.tmp
+-rw-r--r--  1 mikaeli axusers        1 Feb 23 20:04 install_casd_conf.mak
+-rw-r--r--  1 mikaeli axusers     1239 Feb 23 20:04 install_codecconf.mak.tmp
+-rw-r--r--  1 mikaeli axusers      122 Feb 23 20:04 install_dspfirmware.mak.tmp
+-rw-r--r--  1 mikaeli axusers     1197 Feb 23 20:04 install_gpioconf.mak.tmp
+-rw-r--r--  1 mikaeli axusers     1674 Feb 23 20:04 install_iod_conf.mak.tmp
+-rw-r--r--  1 mikaeli axusers      267 Feb 23 20:03 install_mediaclip_uploadsize.mak.tmp
+-rw-r--r--  1 mikaeli axusers      811 Feb 23 20:04 install_resolution_update_extra.mak.tmp
+-rw-r--r--  1 mikaeli axusers        1 Feb 23 20:04 install_testhw.mak.tmp
+-rw-r--r--  1 mikaeli axusers     1885 Feb 23 20:04 install_viewconf.mak.tmp
+-rw-r--r--  1 mikaeli axusers      518 Feb 23 20:04 iod.conf.tmp
+-rw-r--r--  1 mikaeli axusers       97 Feb 23 20:04 iod.socket.tmp
+-rw-r--r--  1 mikaeli axusers     6366 Feb 23 19:42 kernelconfig.in.fpp
+-rw-r--r--  1 mikaeli axusers 44605440 Feb 23 21:41 kimage
+drwxr-xr-x 18 mikaeli axusers     4096 Feb 23 19:47 libs/
+-rw-r--r--  1 mikaeli axusers      133 Feb 23 19:42 local-post-config
+-rw-r--r--  1 mikaeli axusers    57177 Feb 23 19:47 Makefile
+-rw-r--r--  1 mikaeli axusers    14813 Feb 23 19:42 manual_prod_report.json
+drwxr-xr-x  3 mikaeli axusers     4096 Feb 23 19:43 modules/
+-rw-r--r--  1 mikaeli axusers   121960 Feb 23 19:42 mulan_c55.bin
+-rw-r--r--  1 mikaeli axusers     1224 Feb 23 19:42 mulan-view-area-config
+-rw-r--r--  1 mikaeli axusers   589824 Feb 23 21:40 nandboot.bin
+-rw-r--r--  1 mikaeli axusers    40416 Feb 23 20:13 nandboot_raw.bin
+drwxr-xr-x  5 mikaeli axusers     4096 Feb 23 19:43 os/
+drwxr-xr-x 28 mikaeli axusers     4096 Feb 23 19:47 packages/
+-rw-r--r--  1 mikaeli axusers      254 Feb 23 20:03 par_mediaclip_maxuploadsize.conf.tmp
+-rw-r--r--  1 mikaeli axusers      235 Feb 23 20:04 par_prop_audioclip_playoptions.conf.tmp
+-rw-r--r--  1 mikaeli axusers      143 Feb 23 20:04 par_prop_io_mantrignbr.conf.tmp
+-rw-r--r--  1 mikaeli axusers     2023 Feb 23 20:04 patch_params.mak
+-rw-r--r--  1 mikaeli axusers      401 Feb 23 21:40 pos.conf.tmp
+drwxr-xr-x  3 mikaeli axusers     4096 Feb 23 19:42 products/
+-rw-r--r--  1 mikaeli axusers      294 Feb 23 21:40 ptablespec
+-rw-r--r--  1 mikaeli axusers      638 Feb 23 19:42 README_dailybuild.txt
+-rw-r--r--  1 mikaeli axusers     3559 Feb 23 19:42 RELEASENOTES
+-rw-r--r--  1 mikaeli axusers     4468 Feb 23 19:42 RELEASENOTES.pre
+-rw-r--r--  1 mikaeli axusers     3397 Feb 23 19:42 resolution_update_addon_a8105.sh
+-rw-r--r--  1 mikaeli axusers      171 Feb 23 19:42 resolution_update_extra.service
+-rw-r--r--  1 mikaeli axusers    63525 Feb 23 19:48 revisions.log
+-rw-r--r--  1 mikaeli axusers 41090514 Feb 23 21:41 rootfs.cpio.gz
+drwxr-xr-x  3 mikaeli axusers     4096 Feb 23 20:01 target/
+drwxr-xr-x 14 mikaeli axusers     4096 Feb 23 19:47 tests/
+drwxr-xr-x  9 mikaeli axusers     4096 Feb 23 19:46 tools/
+-rw-r--r--  1 mikaeli axusers      126 Feb 23 20:04 transfer_lightcontrol.conf.tmp
+-rw-r--r--  1 mikaeli axusers       57 Feb 23 19:49 tree_build_path
+-rw-r--r--  1 mikaeli axusers   177272 Feb 23 19:42 TrueVoice_API.pdf
+-rw-r--r--  1 mikaeli axusers     1433 Feb 23 19:42 TrueVoice_release_notes.txt
+-rw-r--r--  1 mikaeli axusers      473 Feb 23 21:41 ubi2.ini
+-rw-r--r--  1 mikaeli axusers       94 Feb 23 21:41 ubi3.ini
+drwxr-xr-x  9 mikaeli axusers     4096 Feb 23 19:43 unpacked/
+-rw-r--r--  1 mikaeli axusers  8093696 Feb 23 20:13 vmlinux.bin
+-rw-r--r--  1 mikaeli axusers  3509987 Feb 23 20:12 vmlinuz
+-rw-------  1 mikaeli axusers  3510011 Feb 23 21:40 vmlinuz.ubin
+mikaeli@lnxlinusli> ll fimage               ~/repo/A8104_Mulan_5_80_DB_A8104_BT
+-rw-r--r-- 1 mikaeli axusers 68151868 Feb 23 21:41 fimage
+mikaeli@lnxlinusli> nb_init_env             ~/repo/A8104_Mulan_5_80_DB_A8104_BT
+cd /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT ; source ./init_env test -e .clang-format || nbindent -c > .clang-format pwd /bin/zsh
+Setting AXIS_LEGACY_BUILD_SYSTEM=y
+Setting QART_OVERRIDE_REV_tools_test_common=pre-topic/fadde/R1.3.10-nose-wrapper_logs_START_END
+Setting QART_OVERRIDE_REV_tests_atf_qart_actions_and_events=user/johana/fix_virtual_input_for_many_io
+Setting QART_ATF_INIT_TAG=R2.28.1
+Prepending "/usr/local/mipsisa32r2el/r25/bin" to PATH.
+Prepending "/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/build_env/bin" to PATH.
+Unsetting AXIS_PROD_VARIANT
+Setting AXIS_DEVELOPER=y
+Setting AXIS_TESTER=y
+Setting AXIS_RESUME=y
+Setting AXIS_TEST_SUPPORT=/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/test_support
+Sourcing tools/test/atf/init/atf.sh
+Type 'atf' to activate the Automated Test Framework (ATF).
+Prepending "/usr/local/mipsisa32r2el/r27/bin" to PATH.
+Setting LINUX_FIRMWARE_PLATFORM_DAILY_BUILD=y
+Unsetting LFP_BRANCH
+Setting AXIS_CONF_OVERRIDE_FILE=lfp5-ignores-common.conf
+/bin/sh: line 1: nbindent: command not found
+/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT
+mikaeli@lnxlinusli> cd ~/repo/A8104_Mulan_5_80_DB_A8104_BT 
+mikaeli@lnxlinusli> cd apps/posd            ~/repo/A8104_Mulan_5_80_DB_A8104_BT
+mikaeli@lnxlinusli> l             ~/repo/A8104_Mulan_5_80_DB_A8104_BT/apps/posd
+total 3876
+-rw-r--r-- 1 mikaeli axusers  19001 Feb 23 19:46 autorotation.c
+-rw-r--r-- 1 mikaeli axusers   1501 Feb 23 19:46 autorotation.h
+-rw-r--r-- 1 mikaeli axusers 354084 Feb 23 21:33 autorotation.o
+drwxr-xr-x 3 mikaeli axusers   4096 Feb 23 20:01 checktests/
+-rw-r--r-- 1 mikaeli axusers   5647 Feb 23 19:46 datacache_posd.c
+-rw-r--r-- 1 mikaeli axusers    764 Feb 23 19:46 datacache_posd_dummy.c
+-rw-r--r-- 1 mikaeli axusers 128692 Feb 23 21:33 datacache_posd_dummy.o
+-rw-r--r-- 1 mikaeli axusers    721 Feb 23 19:46 datacache_posd.h
+-rw-r--r-- 1 mikaeli axusers      0 Feb 23 21:33 empty
+-rw-r--r-- 1 mikaeli axusers  53410 Feb 23 19:46 http_api.c
+-rw-r--r-- 1 mikaeli axusers    782 Feb 23 19:46 http_api.h
+-rw-r--r-- 1 mikaeli axusers 396032 Feb 23 21:33 http_api.o
+-rw-r--r-- 1 mikaeli axusers  12660 Feb 23 19:46 kiss_fft.c
+-rw-r--r-- 1 mikaeli axusers   5798 Feb 23 19:46 _kiss_fft_guts.h
+-rw-r--r-- 1 mikaeli axusers   2914 Feb 23 19:46 kiss_fft.h
+-rw-r--r-- 1 mikaeli axusers  97020 Feb 23 21:33 kiss_fft.o
+-rw-r--r-- 1 mikaeli axusers    314 Feb 23 19:46 main.c
+-rw-r--r-- 1 mikaeli axusers 129864 Feb 23 21:33 main.o
+-rw-r--r-- 1 mikaeli axusers   6005 Feb 23 19:46 Makefile
+-rw-r--r-- 1 mikaeli axusers  12934 Feb 23 19:46 orientation.c
+-rw-r--r-- 1 mikaeli axusers   2003 Feb 23 19:46 orientation.h
+-rw-r--r-- 1 mikaeli axusers 351456 Feb 23 21:33 orientation.o
+-rwxr-xr-x 1 mikaeli axusers 619982 Feb 23 21:33 posd*
+-rw-r--r-- 1 mikaeli axusers   8415 Feb 23 19:46 posd.c
+-rw-r--r-- 1 mikaeli axusers   1265 Feb 23 19:46 posd.conf
+-rw-r--r-- 1 mikaeli axusers   2033 Feb 23 19:46 posd.h
+-rw-r--r-- 1 mikaeli axusers 382712 Feb 23 21:33 posd.o
+-rw-r--r-- 1 mikaeli axusers  21088 Feb 23 19:46 posd_state.c
+-rw-r--r-- 1 mikaeli axusers   2814 Feb 23 19:46 posd_state.h
+-rw-r--r-- 1 mikaeli axusers 387380 Feb 23 21:33 posd_state.o
+-rw-r--r-- 1 mikaeli axusers    219 Feb 23 19:46 positioning.service
+-rw-r--r-- 1 mikaeli axusers  23190 Feb 23 19:46 shock_detection.c
+-rw-r--r-- 1 mikaeli axusers   1525 Feb 23 19:46 shock_detection.h
+-rw-r--r-- 1 mikaeli axusers 365044 Feb 23 21:33 shock_detection.o
+-rw-r--r-- 1 mikaeli axusers  56184 Feb 23 19:46 tilt_detection.c
+-rw-r--r-- 1 mikaeli axusers   2074 Feb 23 19:46 tilt_detection.h
+-rw-r--r-- 1 mikaeli axusers 412520 Feb 23 21:33 tilt_detection.o
+-rw-r--r-- 1 mikaeli axusers    229 Feb 23 19:46 transfer_orientation.conf
+-rw-r--r-- 1 mikaeli axusers    463 Feb 23 19:46 transfer_shockd.conf
+-rw-r--r-- 1 mikaeli axusers    609 Feb 23 19:46 transfer_tiltd.conf
+mikaeli@lnxlinusli> emacs24 tilt_detection.c &
+[1] 6629
+mikaeli@lnxlinusli> make && make install
+mipsisa32r2el-axis-linux-gnu-gcc  -isystem /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/include -isystem /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include -Wall -Wshadow -O2 -g3 -D_FORTIFY_SOURCE=2 -fstack-protector  -MD -MP -MF .depend/tilt_detection.d -MT tilt_detection.o -Wall -Wformat=2 -Wpointer-arith -Wbad-function-cast -Wstrict-prototypes -Winline -Wmissing-prototypes -Werror -g -pthread -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/event2 -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/dbus-1.0 -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/dbus-1.0/include -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/glib-utils -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/axlog -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/glib-2.0 -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/glib-2.0/include  -DDAEMON_USER=\"posd\"   -c -o tilt_detection.o tilt_detection.c
+tilt_detection.c: In function 'get_moving_average':
+tilt_detection.c:1079:3: error: passing argument 1 of 'syslog' makes integer from pointer without a cast [-Werror]
+In file included from /usr/local/mipsisa32r2el/r27/mipsisa32r2el-axis-linux-gnu/sys-root/usr/include/sys/syslog.h:207:0,
+                 from /usr/local/mipsisa32r2el/r27/mipsisa32r2el-axis-linux-gnu/sys-root/usr/include/syslog.h:1,
+                 from tilt_detection.c:12:
+/usr/local/mipsisa32r2el/r27/mipsisa32r2el-axis-linux-gnu/sys-root/usr/include/bits/syslog.h:29:1: note: expected 'int' but argument is of type 'char *'
+tilt_detection.c:1079:3: error: passing argument 2 of 'syslog' from incompatible pointer type [-Werror]
+In file included from /usr/local/mipsisa32r2el/r27/mipsisa32r2el-axis-linux-gnu/sys-root/usr/include/sys/syslog.h:207:0,
+                 from /usr/local/mipsisa32r2el/r27/mipsisa32r2el-axis-linux-gnu/sys-root/usr/include/syslog.h:1,
+                 from tilt_detection.c:12:
+/usr/local/mipsisa32r2el/r27/mipsisa32r2el-axis-linux-gnu/sys-root/usr/include/bits/syslog.h:29:1: note: expected 'const char *' but argument is of type 'float *'
+tilt_detection.c:1079:3: error: format not a string literal and no format arguments [-Werror=format-security]
+cc1: all warnings being treated as errors
+<builtin>: recipe for target 'tilt_detection.o' failed
+make: *** [tilt_detection.o] Error 1
+[2] mikaeli@lnxlinusli> make && make install
+mipsisa32r2el-axis-linux-gnu-gcc  -isystem /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/include -isystem /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include -Wall -Wshadow -O2 -g3 -D_FORTIFY_SOURCE=2 -fstack-protector  -MD -MP -MF .depend/tilt_detection.d -MT tilt_detection.o -Wall -Wformat=2 -Wpointer-arith -Wbad-function-cast -Wstrict-prototypes -Winline -Wmissing-prototypes -Werror -g -pthread -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/event2 -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/dbus-1.0 -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/dbus-1.0/include -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/glib-utils -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/axlog -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/glib-2.0 -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/glib-2.0/include  -DDAEMON_USER=\"posd\"   -c -o tilt_detection.o tilt_detection.c
+tilt_detection.c: In function 'get_moving_average':
+tilt_detection.c:1079:3: error: format '%f' expects argument of type 'double', but argument 3 has type 'float *' [-Werror=format]
+cc1: all warnings being treated as errors
+<builtin>: recipe for target 'tilt_detection.o' failed
+make: *** [tilt_detection.o] Error 1
+[2] mikaeli@lnxlinusli> make && make install
+mipsisa32r2el-axis-linux-gnu-gcc  -isystem /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/include -isystem /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include -Wall -Wshadow -O2 -g3 -D_FORTIFY_SOURCE=2 -fstack-protector  -MD -MP -MF .depend/tilt_detection.d -MT tilt_detection.o -Wall -Wformat=2 -Wpointer-arith -Wbad-function-cast -Wstrict-prototypes -Winline -Wmissing-prototypes -Werror -g -pthread -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/event2 -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/dbus-1.0 -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/dbus-1.0/include -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/glib-utils -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/axlog -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include/glib-2.0 -I/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/glib-2.0/include  -DDAEMON_USER=\"posd\"   -c -o tilt_detection.o tilt_detection.c
+mipsisa32r2el-axis-linux-gnu-gcc  -isystem /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/include -isystem /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/include  -L/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/lib -L/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib -Wl,-rpath-link,/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/lib:/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib   -lfdipc -lparhand -lpositioning -lstatuscache -L/home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib -levent2 -ldbus-glib-1 -ldbus-1 -lglib-utils -laxlog -lgthread-2.0 -pthread -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lpthread  -lxmlnode -lax_daemon -lm autorotation.o kiss_fft.o orientation.o posd_state.o posd.o tilt_detection.o shock_detection.o main.o http_api.o datacache_posd_dummy.o -o posd
+install_elinux -p -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/systemd/system
+install_elinux -p -m 0644 positioning.service /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/systemd/system
+install_elinux -p -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/systemd/system/multi-user.target.wants
+ln -sfn ../positioning.service /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/lib/systemd/system/multi-user.target.wants
+------------------------------------------------------------------------
+INSTALL : posd
+groupadd_elinux -p /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu posd
+groupadd_elinux -p /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu gpio
+groupadd_elinux -p /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu iiodevices
+groupadd_elinux -p /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu video
+useradd_elinux -p /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu -g posd -G posd,gpio,iiodevices,video -c "Positioning Daemon" \
+posd
+install_elinux -p -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/bin
+install_elinux -p -o posd -g posd posd /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/bin
+install_elinux -p -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/etc/dbus-1/system.d
+install_elinux -p -m 0644 posd.conf /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/etc/dbus-1/system.d
+install_elinux -p -m 0755 -o posd -g posd -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/var/run/posd
+install_elinux -p -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/tiltdetection
+install_elinux -p -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/shockdetection
+install_elinux -p -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/orientation
+touch empty
+install_elinux -p -m 0755 -o posd -g posd -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/var/run/posd
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/tiltdetection/setenabled.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/tiltdetection/getenabled.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/tiltdetection/settriggerangle.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/tiltdetection/gettriggerangle.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/tiltdetection/setsensitivitylevel.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/tiltdetection/getsensitivitylevel.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/tiltdetection/getschemaversions.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/tiltdetection/getschemaversion.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/shockdetection/setenabled.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/shockdetection/getenabled.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/shockdetection/setsensitivitylevel.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/shockdetection/getsensitivitylevel.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/shockdetection/getschemaversions.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/shockdetection/getschemaversion.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/orientation/getlateralvalue.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/orientation/getlongitudinalvalue.cgi
+install_elinux -p -m 0750 -g operator empty /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/usr/html/axis-cgi/orientation/getschemaversions.cgi
+install_elinux -p -o www -g www -d /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/etc/httpd/conf /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/etc/apache2/transfer
+install_elinux -p -o www -g www -m 0600 transfer_orientation.conf transfer_tiltd.conf transfer_shockd.conf /home/svcj-build/NB/A8104_Mulan_5_80/PRODUCTS/DB_A8104_BT/target/mipsisa32r2el-axis-linux-gnu/etc/apache2/transfer
+------------------------------------------------------------------------
+mikaeli@lnxlinusli> l posd        ~/repo/A8104_Mulan_5_80_DB_A8104_BT/apps/posd
+-rwxr-xr-x 1 mikaeli axusers 620294 Feb 24 10:35 posd*
+mikaeli@lnxlinusli> scp posd root@172.25.11.239:/tmp/.
+root@172.25.11.239's password: 
+posd                                          100%  606KB 605.8KB/s   00:00    
+mikaeli@lnxlinusli> ssh root@172.25.11.239
+root@172.25.11.239's password: 
+X11 forwarding request failed on channel 0
+[root@axis-00408c18705f /mnt/flash/root]17697# ps
+    1 root     13420 S    /lib/systemd/systemd
+    2 root         0 SW   [kthreadd]
+    3 root         0 SW   [ksoftirqd/0]
+    5 root         0 SW<  [kworker/0:0H]
+    6 root         0 SW   [kworker/u8:0]
+    7 root         0 SW   [rcu_sched]
+    8 root         0 SW   [rcu_bh]
+    9 root         0 SW   [migration/0]
+   10 root         0 SW   [migration/1]
+   11 root         0 SW   [ksoftirqd/1]
+   13 root         0 SW<  [kworker/1:0H]
+   14 root         0 SW   [migration/2]
+   15 root         0 SW   [ksoftirqd/2]
+   17 root         0 SW<  [kworker/2:0H]
+   18 root         0 SW   [migration/3]
+   19 root         0 SW   [ksoftirqd/3]
+   21 root         0 SW<  [kworker/3:0H]
+   22 root         0 SW<  [khelper]
+   23 root         0 SW   [kdevtmpfs]
+   24 root         0 SW<  [writeback]
+   25 root         0 SW<  [crypto]
+   27 root         0 SW<  [bioset]
+   28 root         0 SW<  [kblockd]
+   30 root         0 SW   [kswapd0]
+   31 root         0 SW   [fsnotify_mark]
+   32 root         0 SW<  [cifsiod]
+   68 root         0 SW   [kworker/u8:2]
+   69 root         0 SW<  [ipv6_addrconf]
+   71 root         0 SW<  [deferwq]
+   72 root         0 SW   [ubi_bgt0d]
+   78 root         0 SW   [ubi_bgt1d]
+   97 root         0 SW   [ubifs_bgt0_21]
+  146 root      2636 S    /bin/sh
+  153 root      3340 S    /usr/lib/systemd/systemd-udevd
+  159 root      2556 S    /usr/lib/systemd/systemd-journald
+  186 root         0 SW   [kworker/3:2]
+  194 root         0 SW   [ubifs_bgt0_25]
+  195 root         0 SW   [ubifs_bgt1_24]
+  277 root         0 SW   [kworker/1:2]
+  341 root      1908 R    /usr/sbin/rngd -f -r /dev/hwrng
+  363 streamer 58988 S    /usr/bin/monolith -n -m 54321
+  366 imaged   32076 S    /usr/bin/image2d
+  403 root     11888 S    /usr/sbin/httpd -k start -DNO_DETACH
+  542 messageb  5312 S    /usr/bin/dbus-daemon --system --address=systemd: --n
+  667 www      11880 S    /usr/sbin/httpd -k start -DNO_DETACH
+  675 www       194m S    /usr/sbin/httpd -k start -DNO_DETACH
+  711 root      2572 S    /sbin/udhcpc -R -a -p /var/run/dhcp/dhcp4_eth0.pid -
+  712 lens_cor 27304 S    /usr/bin/lens_correctiond -n
+  714 motion   17824 S    /usr/bin/motion -n -c /etc/emotiond.conf
+  717 confcach 34532 S    /usr/sbin/confcached
+  718 environm 27904 S    /usr/bin/temperature_ctrld -n
+  719 tamperin 18492 S    /usr/bin/tampering -n -c /etc/tampering.conf
+  722 schedule 14852 S    /usr/bin/scheduled -n
+  728 root     14552 S    /sbin/ipchanged -n -e /etc/ipchanged.script
+  741 root      2044 S    /sbin/scrubd -n -d /dev/part/boot -u /dev/part/kerne
+  743 depd     26144 S    /usr/bin/depd -n
+  748 eventbri 54136 S    /usr/sbin/eventbridged -n -i eventbridged
+  752 event     8104 S    /usr/bin/event_switch -n
+  754 virtuali 26340 S    /usr/bin/virtualinputd -n -i virtualinputd -p 32
+  762 root      6864 S    /bin/parhand /dev/null 50011 -d /usr/etc/param -d /e
+  765 root     14168 S    /usr/sbin/debugar.cgi -n
+  772 root         0 SW   [kworker/1:3]
+  780 streamer 69524 S    /usr/bin/sipd -n
+  816 iod      18800 S    /bin/iodserver
+  827 ptzadm   36856 S    /usr/bin/ptzaurus
+  853 root      1908 S    /sbin/zeroconf-ip -i eth0
+  861 posd     89176 S    /usr/bin/posd
+  869 axisns   17072 S    /bin/axisns add -w
+  870 bw        2020 S    /usr/bin/bw --directory /var/cache/bw --text-file bw
+  885 nobody    2320 S    /usr/sbin/mdnsd
+  898 storage   113m S    /usr/bin/storage_manager -n --serial-no 00408C18705F
+  939 root      2256 S    /bin/vftpd -r -n -q 0 -Q 0
+  940 root      1904 S    /sbin/respawnd
+ 1016 scm      36900 S    /usr/bin/scm -c /etc/scm/scm.conf -i scm
+ 1066 root      8028 S    /usr/sbin/policykit_parhand -n
+ 1095 wsd      39532 S    /usr/bin/wsd
+ 1099 wsdd     12348 S    /usr/bin/wsdd -a
+ 1106 storage   127m S    /usr/bin/indexer -n --continuous-profiles 1
+ 1111 actionen 17092 S    /usr/bin/actionengined -i actionengined.system -c /u
+ 1194 actionen 54396 S    /usr/bin/actionengined -i actionengined.user -c /usr
+ 1277 root      3720 S    /usr/sbin/ntpd -s -p /run/ntp/ntpd.pid -f /run/ntp/n
+ 1278 nobody    3720 S    /usr/sbin/ntpd -s -p /run/ntp/ntpd.pid -f /run/ntp/n
+ 1291 ptzadm   20864 S    /usr/bin/dptzd --channel 1 --id 11 --port 1 -n
+ 1295 ptzadm   20864 S    /usr/bin/dptzd --channel 2 --id 21 --port 2 -n
+ 1297 ptzadm   20864 S    /usr/bin/dptzd --channel 3 --id 31 --port 3 -n
+ 1298 ptzadm   20864 S    /usr/bin/dptzd --channel 4 --id 41 --port 4 -n
+ 1304 ptzadm   20864 S    /usr/bin/dptzd --channel 5 --id 51 --port 5 -n
+ 1308 actionen 17224 S    /usr/bin/actionengined -i actionengined.legacy -c /u
+ 1310 ptzadm   20860 S    /usr/bin/dptzd --channel 6 --id 61 --port 6 -n
+ 1311 ptzadm   20860 S    /usr/bin/dptzd --channel 7 --id 71 --port 7 -n
+ 1316 ptzadm   20864 S    /usr/bin/dptzd --channel 8 --id 81 --port 8 -n
+ 1339 ptzadm   11500 S    /usr/bin/ptzvapixd
+ 1393 root     31560 S    /usr/sbin/rsyslogd -n -c5
+ 1458 stclient 99.2m S    /usr/bin/stclient -e auto -d 0
+ 1490 rendezvo  2024 S    /bin/mDNSResponderPosix -f /var/lib/rendezvous/Servi
+ 1493 iod      44924 S    /usr/bin/io2d
+ 1515 root      6992 S    /usr/sbin/policykit_system -n
+ 1738 upnp      126m S    /usr/bin/libupnp -r 172.25.8.1 -i 172.25.11.239
+ 1765 gtourd   37344 S    /usr/bin/presettourd -n
+ 1789 led      26688 S    /usr/bin/blinkenlights -n
+ 1800 root     18684 S    /bin/ssid -n
+ 2432 ruleengi 47704 S    /usr/bin/ruleengined
+ 2621 root         0 SW   [kworker/2:0]
+ 3777 root         0 SW   [kworker/0:0]
+10131 root         0 SW   [kworker/0:2]
+17524 root         0 SW   [kworker/3:0]
+17694 root         0 SW   [kworker/0:1]
+17695 root      7784 R    sshd: root@pts/0
+17697 root      2636 S    -sh
+17702 root      2752 R    ps
+29087 root         0 SW   [kworker/2:2]
+[root@axis-00408c18705f /mnt/flash/root]17697# ps | grep -i pos
+  861 posd     89176 D    /usr/bin/posd
+ 1490 rendezvo  2024 S    /bin/mDNSResponderPosix -f /var/lib/rendezvous/Servi
+17704 root      2704 S    grep -i pos
+[root@axis-00408c18705f /mnt/flash/root]17697# systemctl stop positioning
+[root@axis-00408c18705f /mnt/flash/root]17697# ps | grep -i pos
+ 1490 rendezvo  2024 R    /bin/mDNSResponderPosix -f /var/lib/rendezvous/Servi
+17711 root      2636 S    grep -i pos
+[root@axis-00408c18705f /mnt/flash/root]17697# posd -n
+posd[17712]: Sucessfully started
+adasfasf
+
+af
+dasf
+ps
+
+^C[root@axis-00408c18705f /mnt/flash/root]17697# 
+[root@axis-00408c18705f /mnt/flash/root]17697# posd -n | tee log.txt
+posd[17722]: Sucessfully started
+^C
+[root@axis-00408c18705f /mnt/flash/root]17697# cat log.txt 
+[root@axis-00408c18705f /mnt/flash/root]17697# exit
+Connection to 172.25.11.239 closed.
+mikaeli@lnxlinusli> cd ../..      ~/repo/A8104_Mulan_5_80_DB_A8104_BT/apps/posd
+mikaeli@lnxlinusli> ls fimage               ~/repo/A8104_Mulan_5_80_DB_A8104_BT
+fimage
+mikaeli@lnxlinusli> nbflash --help          ~/repo/A8104_Mulan_5_80_DB_A8104_BT
+Usage: nbflash [options] <device_list>
+
+Options:
+  -h, --help: Print this help.
+  -i, --image: Image to use for flashing. Default is fimage.
+  -p, --proxy: Proxy to use. Default is ''.
+  -f, --ftp: Use nhftpflash instead of jahttpflash(all).
+  -a, --flashall: Do jahttpflashall instead of jahttpflash.
+  -s, --syslogkeep: Keep syslog in /usr/local/messages during flashall.
+  -l, --peerlist: Append AXIS_PEER_LIST to the selected targets.
+  -t, --timeout: Sets flash timeout. 0 is default, and means no timeout.
+  -c, --credentials: Sets login credentials "username:password". Default is "root:pass"
+  <device_list>: Names of the devices as specified in $HOME/nb_settings.
+  If no device names are specified the default will be used.
+
+Example usage:
+# Do a standard flash of the default device.
+nbflash
+
+# Flashall on several devices with image2.bin using proxy.
+nbflash -p 'http://wwwproxy.se.axis.com:3128' -i image2.bin -a device1 device2
+
+mikaeli@lnxlinusli> nbflash 172.25.11.239   ~/repo/A8104_Mulan_5_80_DB_A8104_BT
+{'ftp': False, 'flash_mode': 'flash', 'device_names': ['172.25.11.239'], 'proxy': '', 'timeout': 180, 'credentials': 'root:pass', 'image': 'fimage', 'peerlist': False, 'syslogkeep': False}
+[INFO]:[172.25.11.239]:Started upgrading device firmware via HTTP
+^C
+^C^C
+[INFO]:[172.25.11.239]:Firmware uploaded
+Traceback (most recent call last):
+  File "/home/mikaeli/newbiz/nbflash", line 114, in <module>
+    start_upgrade_devices()
+  File "/home/mikaeli/newbiz/nbflash", line 21, in start_upgrade_devices
+    upgrade_devices(device_list, parameters, logging.DEBUG)
+  File "/home/mikaeli/newbiz/nbpython/flash.py", line 239, in upgrade_devices
+    thread.join()
+  File "/usr/lib/python2.7/threading.py", line 949, in join
+    self.__block.wait()
+  File "/usr/lib/python2.7/threading.py", line 340, in wait
+    waiter.acquire()
+KeyboardInterrupt
+[1] mikaeli@lnxlinusli>                     ~/repo/A8104_Mulan_5_80_DB_A8104_BT
+[1] mikaeli@lnxlinusli> nbflash -a 172.25.11.239
+{'ftp': False, 'flash_mode': 'flash_all', 'device_names': ['172.25.11.239'], 'proxy': '', 'timeout': 180, 'credentials': 'root:pass', 'image': 'fimage', 'peerlist': False, 'syslogkeep': False}
+[INFO]:[172.25.11.239]:Started upgrading device firmware via HTTP
+[INFO]:[172.25.11.239]:Removing /usr/local/messages
+[INFO]:[172.25.11.239]:Firmware uploaded
+[INFO]:[172.25.11.239]:Started analyzing device
+[INFO]:[172.25.11.239]:Ftp: OK  Http: OK  Flash: 52.3  Build Time: OK - Build Time: Feb 23 2017 21:40
+[INFO]:[Main]:OK
+mikaeli@lnxlinusli>        
