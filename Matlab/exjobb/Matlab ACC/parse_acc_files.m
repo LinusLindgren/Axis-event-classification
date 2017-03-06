@@ -2,7 +2,7 @@ function [nposfiles,nnegfiles, samples ] = parse_acc_files()
 
 posAccfiles = dir('exjobb\Axis-event-classification\acc_data\pos\acc*');      
 nposfiles = length(posAccfiles);    % Number of files found
-negAccfiles = dir('exjobb\Axis-event-classification\acc_data\pos\acc*');      
+negAccfiles = dir('exjobb\Axis-event-classification\acc_data\posv2\acc*');      
 nnegfiles = length(negAccfiles);    % Number of files found
 nbrFiles = nnegfiles + nposfiles;
 samples = zeros(256,3,nbrFiles);

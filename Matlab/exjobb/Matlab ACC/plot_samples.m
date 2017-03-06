@@ -3,7 +3,7 @@ function [] = plot_samples( samples,nposfiles,nnegfiles )
 %   Detailed explanation goes here
 
 random_pos_file = floor(rand(1)*nposfiles);
-random_neg_file = floor(rand(1)*nnegfiles);
+random_neg_file = floor(rand(1)*nnegfiles)+nposfiles;
 %Plot X,Y,Z Axis for one neg and one pos file seperatly
 figure;
 title('X-axis random positive(green) and random negative(red) data');
