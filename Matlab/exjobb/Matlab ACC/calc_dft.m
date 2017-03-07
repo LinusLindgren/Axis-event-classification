@@ -8,7 +8,7 @@ for i = 1 : size(samples,3)
 end
 
 
-
+% 
 % random_pos_file = floor(rand(1)*nposfiles);
 % random_neg_file = floor(rand(1)*nnegfiles)+nposfiles;
 % %Plot X,Y,Z Axis for one neg and one pos file seperatly
@@ -72,8 +72,8 @@ end
 % title('Single-Sided Amplitude Spectrum of X(t)')
 % xlabel('f (Hz)')
 % ylabel('|P1(f)|')
-
-
+% 
+% 
 
 end
 

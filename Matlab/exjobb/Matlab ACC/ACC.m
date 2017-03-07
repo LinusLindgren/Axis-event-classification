@@ -1,7 +1,7 @@
 %% read samples
 clear, clc, close all
 [nposfiles,nnegfiles,samples] = parse_acc_files();
-
+nbrfiles = nposfiles + nnegfiles;
 %% compute non-dft values
 tiltXZ = calc_tilt(samples(:,3,:),samples(:,1,:));
 tiltYZ = calc_tilt(samples(:,3,:),samples(:,2,:));
@@ -74,24 +74,37 @@ for i = 1 : nposfiles+nnegfiles
     [cross_corr(1,i), ~] = max(abs(xcorr(samples(:,1,i),samples(:,2,i))));
     [cross_corr(2,i), ~] = max(abs(xcorr(samples(:,1,i),samples(:,3,i))));
     [cross_corr(3,i), ~] = max(abs(xcorr(samples(:,2,i),samples(:,3,i))));
-
+    cross_corr(:,i) = cross_corr(:,i) / norm(cross_corr(:,i),2);
 end
 %20 lags default for auto corr
 auto_corr = zeros(21,3,nposfiles+nnegfiles);
+auto_corr_pos = zeros(1,nposfiles+nnegfiles);
+auto_corr_neg = zeros(1,nposfiles+nnegfiles);
 
 for i = 1 : nposfiles+nnegfiles
     auto_corr(:,1,i) = autocorr(samples(:,1,i));
     auto_corr(:,2,i) = autocorr(samples(:,2,i));
     auto_corr(:,3,i) = autocorr(samples(:,3,i));
+    auto_corr_neg(1,i) = sum(auto_corr(:,3,i)<0);
+    auto_corr_pos(1,i) = size(auto_corr,1)-auto_corr_neg(1,i);
 end
 
-sum_auto = zeros(nposfiles+nnegfiles,1);
-min_auto = zeros(nposfiles+nnegfiles,1);
+auto_corr_flat = auto_corr_pos - auto_corr_neg;
+
+sum_auto = zeros(nposfiles+nnegfiles,3);
+min_auto = zeros(nposfiles+nnegfiles,3);
 for i = 1 : nposfiles+nnegfiles
-    sum_auto(i,1) = sum(squeeze(auto_corr(:,3,i)));
-    min_auto(i,1) = min(squeeze(auto_corr(:,3,i)));
+    sum_auto(i,:) = sum(squeeze(auto_corr(:,:,i)));
+    min_auto(i,:) = min(squeeze(auto_corr(:,:,i)));
+    
 end
 
+%% perform training and testing
+clc
+attempts = 1000;
+sumOfRatios = 0;
+countMissclassifications = zeros(nbrfiles,1);
+for i=1:attempts 
 alpha = 0.75;
 label = zeros(nposfiles+nnegfiles,1);
 label(1:nposfiles,1) = 1;
@@ -100,11 +113,12 @@ trainIndex = randperm(nposfiles+nnegfiles,floor(alpha*nposfiles+nnegfiles));
 index= linspace(1,nposfiles+nnegfiles,nposfiles+nnegfiles);
 testIndex = setdiff(index,trainIndex);
 
+% combine features
 %trainObservations = [squeeze(auto_corr(:,3,trainIndex))' sum_auto(trainIndex,1) min_auto(trainIndex,1)];
-trainObservations =  [sum_auto(trainIndex,1) min_auto(trainIndex,1)];
+trainObservations =  [sum_auto(trainIndex,3) min_auto(trainIndex,1)  cross_corr(:,trainIndex)'];
 trainLabels = label(trainIndex);
 %testobservations = [squeeze(auto_corr(:,3,testIndex))' sum_auto(testIndex,1) min_auto(testIndex,1)];
-testobservations = [sum_auto(testIndex,1) min_auto(testIndex,1)];
+testobservations = [sum_auto(testIndex,3) min_auto(testIndex,1) cross_corr(:,testIndex)'];
 testLabels = label(testIndex);
 SVMModel = fitclinear(trainObservations,trainLabels);
 
@@ -117,20 +131,24 @@ predictions = (pred_labels == testLabels);
 result = zeros(size(predictions,1),2);
 result(:,1) = predictions;
 result(:,2) = testIndex';
-result
+result;
 
 
-res = pred_labels - testLabels;
-disp('false positve');
-length(res(res(:)==1))
-disp('false negative');
-length(res(res(:)==-1))
-disp('ratio of false positve');
-length(res(res(:)==1)) / (length(res(res(:)==1))+length(res(res(:)==-1)))
+% res = pred_labels - testLabels;
+% disp('false positve');
+% length(res(res(:)==1))
+% disp('false negative');
+% length(res(res(:)==-1))
 %testLabels-pred_labels
-ratio = sum(predictions)/size(predictions,1)
+ratio = sum(predictions)/size(predictions,1);
+sumOfRatios = sumOfRatios + ratio;
+failingIndexes = testIndex(result(:,1) == 0);
 
+countMissclassifications(failingIndexes,1) = countMissclassifications(failingIndexes,1) + 1;
 
+end
+
+averageRatio = sumOfRatios/attempts
 
 
 
