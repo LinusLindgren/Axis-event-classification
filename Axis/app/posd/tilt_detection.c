@@ -16,6 +16,7 @@
 #include "datacache_posd.h"
 #include "kiss_fft.h"
 #include <time.h>
+#include "calc_acf.h"
 #ifdef HOST
 #include "checktests/stubs/positioning_stubs.h"
 #include "checktests/stubs/stubbed_dbus.h"
@@ -77,6 +78,12 @@ static int false_positives = 0;
 #else
 #define STARTUP_LATERAL lateral;
 #endif
+//define constants for activity after sampling
+#define ANALYZE_THREAD 0 //old classifier
+#define SAVE_SAMPLES 1 //save samples to file
+#define CLASSIFY_TAMPERING 2 //new classifier
+#define SAMPLING_ACTIVITY 2 // choice of activity
+
 
 /* Introspection data for the service we are exporting */
 static const gchar introspection_xml[] =
@@ -121,7 +128,7 @@ static const gchar introspection_xml[] =
  * tilt data relative to the startup tilt angle.
  */
 typedef struct {
-  //gint *collected_samples;
+  gint *collected_tilt_samples;
   device_sample** collected_samples;
   GMutex *report_mutex;
   gboolean *tamper_triggered;
@@ -398,8 +405,8 @@ collect_samples(G_GNUC_UNUSED gpointer data);
  *
  * Returns: NULL.
  */
-//static void *
-//analyze_samples(gpointer thread_data);
+static void *
+analyze_samples(gpointer thread_data);
 
 /**
  * Thread start function for tilt data saving.
@@ -414,12 +421,33 @@ static void *
 save_samples_to_file(gpointer thread_data);
 
 /**
- * Start a new thread that analyzes the data collected.
- * The new thread will start in analyze_samples(), and it'll
+ * Start a new thread that saves the data to file
+ * The new thread will start in save_samples_to_file and it'll
  * take ownership of the thread_data_type struct provided to it.
  */
 static void
 start_save_to_file_thread(void);
+
+/**
+ * Thread start function classifying tampering
+ * This thread will free the input data.
+ *
+ * @thread_data: a struct containing the information needed for
+ *               the thread to do its job, like sample data.
+ *
+ * Returns: NULL.
+ */
+static void *
+classify_tampering(gpointer thread_data);
+
+/**
+ * Start a new thread that analyzes the data collected to classify tampering events.
+ * The new thread will start in classify_tampering, and it'll
+ * take ownership of the thread_data_type struct provided to it.
+ */
+static void
+start_classify_tampering_thread(void);
+
 
 /**
  * Filter a dataset with a moving average.
@@ -822,7 +850,7 @@ stop_record_samples(void)
  * The new thread will start in analyze_samples(), and it'll
  * take ownership of the thread_data_type struct provided to it.
  */
-/*
+
 static void
 start_analyze_thread(void)
 {
@@ -847,7 +875,9 @@ start_analyze_thread(void)
   tilt_user_data->observation_count = 0;
   tilt_user_data->pass_count = 0;
 }
-*/
+
+
+
 static void
 start_save_to_file_thread(void)
 {
@@ -875,6 +905,38 @@ start_save_to_file_thread(void)
   tilt_user_data->observation_count = 0;
   tilt_user_data->pass_count = 0;
 }
+
+
+
+static void
+start_classify_tampering_thread(void)
+{
+  pthread_t tid; 
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  //main loop does not want to join, so set the detached attr:
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+  //syslog (LOG_INFO, "Done sampling, starting save to file thread");
+  //malloc data struct. The new thread will free it:
+  thread_data_type *thread_data = (thread_data_type*)malloc(sizeof(thread_data_type));
+  thread_data->report_mutex = &tilt_user_data->report_mutex;
+  thread_data->tamper_triggered = &tilt_user_data->tamper_triggered;
+  thread_data->collected_samples = tilt_user_data->collected_samples;
+  thread_data->acc_x = tilt_user_data->acc_x;
+  thread_data->acc_y = tilt_user_data->acc_y;
+  thread_data->acc_z = tilt_user_data->acc_z;
+  tilt_user_data->collected_samples = NULL;
+
+  //start thread
+  pthread_create(&tid, &attr, classify_tampering, (void*)thread_data);
+
+  stop_record_samples();
+  tilt_user_data->observation_count = 0;
+  tilt_user_data->pass_count = 0;
+}
+
+
 static void free_collected_samples(device_sample** data, int nbrSamples)
 {
 	int i;
@@ -1013,8 +1075,18 @@ collect_samples(G_GNUC_UNUSED gpointer data)
     if (tilt_user_data->samples < SAMPLES_TO_COLLECT) {
       save_sample(tilt);
     } else { //done collecting, send to worker thread
-     	start_save_to_file_thread();
-	//start_analyze_thread();
+	switch(SAMPLING_ACTIVITY) 
+	{
+	  	case ANALYZE_THREAD  :
+	      		start_analyze_thread();
+	      	break; 
+		case SAVE_SAMPLES  :
+	      		start_save_to_file_thread();
+	      	break; 
+		case CLASSIFY_TAMPERING  :
+	      		start_classify_tampering_thread();
+	      	break; 
+	}
     }
   } else {
     if (abs(tilt) >= tilt_detection_get_trigger_angle()) {
@@ -1044,7 +1116,7 @@ collect_samples(G_GNUC_UNUSED gpointer data)
 }
 
 static void* save_samples_to_file(gpointer thread_data){
-	DBG(syslog (LOG_INFO, "Starting to save samples to file saved_samples"));
+	DBG(syslog (LOG_INFO, "Starting to save samples to file"));
 		
 	thread_data_type *data = (thread_data_type*)thread_data; 
 	
@@ -1053,7 +1125,7 @@ static void* save_samples_to_file(gpointer thread_data){
 	device_sample** samples = data->collected_samples;
 	char buffer[32]; // The filename buffer.
     	// Put "file" then k then ".txt" in to filename.
-    	snprintf(buffer, sizeof(char) * 32, "pos%i", (int)time(NULL));
+    	snprintf(buffer, sizeof(char) * 32, "acc_sample%i", (int)time(NULL));
 	FILE* filename = g_fopen (buffer,"w");
 	g_fprintf(filename,"startup(x,y,z):(%d,%d,%d)\n",data->acc_x, data->acc_y, data->acc_z);
 	int i;
@@ -1067,8 +1139,61 @@ static void* save_samples_to_file(gpointer thread_data){
 	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
 	free(data);
 	DBG(syslog (LOG_INFO, "Data has been saved"));
+	exit(0);
 	return NULL;
 }
+
+
+
+static void* classify_tampering(gpointer thread_data){
+	int lag = 20;
+	DBG(syslog (LOG_INFO, "Starting tampering classification"));
+		
+	thread_data_type *data = (thread_data_type*)thread_data; 
+	
+	
+	//gint *samples = data->collected_samples;
+	device_sample** samples = data->collected_samples;
+	
+	//temp for debug, store sample for comparison in matlab
+	char bufferRaw[32]; // The filename buffer.
+    	// Put "file" then k then ".txt" in to filename.
+    	snprintf(bufferRaw, sizeof(char) * 32, "acc_sample%i", (int)time(NULL));
+	FILE* filename = g_fopen (bufferRaw,"w");
+	g_fprintf(filename,"startup(x,y,z):(%d,%d,%d)\n",data->acc_x, data->acc_y, data->acc_z);
+	int i;
+	for(i=0;i<SAMPLES_TO_COLLECT; i++){
+		g_fprintf(filename,"%d %d %d\n",samples[i]->x, samples[i]->y,samples[i]->z);
+	
+	}
+	fclose(filename);
+
+	
+	double* sample_z = malloc(sizeof(double)*SAMPLES_TO_COLLECT);	
+	for(i=0;i<SAMPLES_TO_COLLECT; i++){
+		sample_z[i]=samples[i]->z;
+	}
+	double* acf = calc_acf(sample_z,SAMPLES_TO_COLLECT,lag);
+
+	char buffer[32]; // The filename buffer.
+    	// Put "file" then k then ".txt" in to filename.
+    	snprintf(buffer, sizeof(char) * 32, "acf_of_sample%i", (int)time(NULL));
+	filename = g_fopen (buffer,"w");
+	for(i=0;i<=lag; i++){
+		g_fprintf(filename,"%f\n",acf[i]);
+	}
+	fclose(filename);
+	
+	
+	//free(data->collected_samples);
+	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
+	free(data);
+	DBG(syslog (LOG_INFO, "Data has been saved"));
+	//exit(0);
+	return NULL;
+}
+
+
 // The steps in the algorithm for detecting break-in are:
 // 1. When a disturbance is detected, the tilt data from the accelerometer
 //    is collected for a duration of length (NUM_WINDOWS * WINDOW_LEN) ms.
@@ -1091,11 +1216,11 @@ static void* save_samples_to_file(gpointer thread_data){
 //    frequency component over the two windows are used to classify whether
 //    or not a break-in has occurred.
 
-/*static void *
+static void *
 analyze_samples(gpointer thread_data)
 {
   thread_data_type *data = (thread_data_type*)thread_data;
-  gint *tilt = data->collected_samples;
+  gint *tilt = data->collected_tilt_samples;
   int classification = 0;
   float *data_set = get_moving_average(tilt, SAMPLES_TO_COLLECT);
   float energy_w1 = get_energy(data_set, WINDOW_LEN);
@@ -1154,7 +1279,7 @@ analyze_samples(gpointer thread_data)
   free(data);
   return NULL;
 }
-*/
+
 
 /**
  * get_moving_average:
