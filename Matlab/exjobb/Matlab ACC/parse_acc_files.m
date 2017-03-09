@@ -1,11 +1,11 @@
-function [nposfiles,nnegfiles, samples ] = parse_acc_files()
+function [nposfiles,nnegfiles, samples ] = parse_acc_files(nbrOfSamples)
 
-posAccfiles = dir('exjobb\Axis-event-classification\acc_data\postemp\acc*');      
+posAccfiles = dir('exjobb\Axis-event-classification\acc_data\postempWOhard\acc*');      
 nposfiles = length(posAccfiles);    % Number of files found
 negAccfiles = dir('exjobb\Axis-event-classification\acc_data\negtemp\acc*');      
 nnegfiles = length(negAccfiles);    % Number of files found
 nbrFiles = nnegfiles + nposfiles;
-samples = zeros(256,3,nbrFiles);
+samples = zeros(nbrOfSamples,3,nbrFiles);
 
 
 for fileIndex=1:nposfiles
@@ -17,7 +17,7 @@ for fileIndex=1:nposfiles
    
    %fheader = regexp(fblocks(1), ' ', 'split');
    
-   for sampleIndex=1:256
+   for sampleIndex=1:nbrOfSamples
    %sample= str2num(char(regexp(char(fblocks(sampleIndex+1))), '[ ]', 'split'));
        sample = sscanf(char(fblocks(sampleIndex+1)),'%d %d %d');
        samples(sampleIndex,:,fileIndex) = sample;
@@ -38,7 +38,7 @@ for fileIndex=1:nnegfiles
    
    %fheader = regexp(fblocks(1), ' ', 'split');
    
-   for sampleIndex=1:256
+   for sampleIndex=1:nbrOfSamples
        %sample= str2num(regexp(fblocks(sampleIndex+1), ' ', 'split'));
        sample = sscanf(char(fblocks(sampleIndex+1)),'%d %d %d');
        samples(sampleIndex,:,fileIndex+nposfiles) = sample;
