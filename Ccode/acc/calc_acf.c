@@ -1,27 +1,64 @@
 #include <math.h>
 #include <stdlib.h>
 #include "calc_acf.h"
-double* calc_acf(double* samples, int sample_size,int lag)
-{
+#include <float.h>
 
-	int i,j;
+#define lag 30
+#define NBR_FEATURES 10
+
+double mean(double* sample,int sample_size)
+{
+	int i;
 	double sum = 0;
 	//calc mean
 	for(i = 0; i < sample_size;i++)
 	{
 		sum += samples[i];	
 	}	
-	double mean = sum / sample_size;
-	
-	//calc sample variance
-	sum = 0;
+	return sum / sample_size;
+}
+
+double calc_variance(double* sample,int sample_size, double mean)
+{
+	int i;
+	double sum = 0;
 	for(i = 0; i < sample_size; i++)
 	{
 		sum += pow(samples[i]-mean,2);	
 	}
-	double variance = sum / sample_size;
-	
+	return sum / sample_size;
+}
 
+double min(double* sample, int sample_size)
+{
+	int i;
+	double min = DBL_MAX;
+	for(i = 0; i < sample_size; i++)
+	{
+		if(sample[i]<min)
+		{
+			min = sample[i];
+		}	
+	}
+	return min;
+}
+
+double sum(double* sample, int sample_size)
+{
+	int i;
+	double sum = 0;
+	for(i = 0; i < sample_size; i++)
+	{
+		sum += sample[i];	
+	}
+	return sum;
+}
+
+double* calc_acf(double* samples, int sample_size,int lag, double mean, double variance)
+{
+
+	int i,j;
+	double sum = 0;
 	//allocate return array
 	double* acf = malloc(sizeof(double)*(lag+1));
 	
@@ -38,26 +75,14 @@ double* calc_acf(double* samples, int sample_size,int lag)
 	return acf;
 }
 
-double* calc_xcf(double* samplesX,double* samplesY, int sample_size)
+
+
+double* calc_xcf(double* samplesX,double* samplesY, int sample_size, double meanX, double meanY, double varianceX, double varianceY)
 {
 
 	int i,j,lag;
-	double sumX = 0;
-	double symY = 0;
-	//calc mean
-	for(i = 0; i < sample_size;i++)
-	{
-		sumX += samplesX[i];
-		sumY += samplesY[i];	
-	}	
-	double meanX = sumX / sample_size;
-	double meanY = sumY / sample_size;
-
-	//calc sample variance, stupid to to this multiple time for each correlation, fix 		later
-	
-
 	//allocate return array
-	double* acf = malloc(sizeof(double)*(2*sample_size+1));
+	double* xcf = malloc(sizeof(double)*(2*sample_size+1));
 	
 	//for every lag including 0[0..lag]
 	for(lag=0; lag <= sample_size; lag++)
@@ -77,16 +102,6 @@ double* calc_xcf(double* samplesX,double* samplesY, int sample_size)
 		acf[sample_size-lag]= sum / (sample_size);				
 	}
 
-	//calc variance
-	sumX = 0;
-	sumY = 0;	
-	for(i = 0; i < sample_size; i++)
-	{
-		sumX += pow(samplesX[i]-meanX,2);
-		sumY += pow(samplesY[i]-meanY,2);		
-	}
-	double varianceX = sumX / sample_size;
-	double varianceY = sumY / sample_size;
 
 	//handle complex denomiator	
 	if(varianceX*varianceY)
@@ -95,9 +110,51 @@ double* calc_xcf(double* samplesX,double* samplesY, int sample_size)
 	}	
 
 
-	return acf;
-
-
+	return xcf;
 
 }
+
+
+
+
+
+double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sample_size)
+{
+
+	double* features = malloc(sizeof(double)*NBR_FEATURES);
+	double meanX = mean(sampleX,sample_size);
+	double meanY = mean(sampleY,sample_size);
+	double meanZ = mean(sampleZ,sample_size);
+
+	double varianceX = calc_variance(sampleX,sample_size,meanX);
+	double varianceY = calc_variance(sampleY,sample_size,meanY);
+	double varianceZ = calc_variance(sampleZ,sample_size,meanZ);
+
+	double* acf_x = calc_acf(sampleX,sample_size,lag,meanX,varianceX);	
+	double* acf_y = calc_acf(sampleY,sample_size,lag,meanY,varianceY);	
+	double* acf_z = calc_acf(sampleZ,sample_size,lag,meanZ,varianceZ);
+
+	double acf_x_min = min(acf_x,lag+1);
+	double acf_y_min = min(acf_y,lag+1);
+	double acf_z_min = min(acf_z,lag+1);
+	double acf_x_sum = sum(acf_x,lag+1);
+	double acf_y_sum = sum(acf_y,lag+1);
+	double acf_z_sum = sum(acf_z,lag+1);
+
+	double* xcf_xy = calc_xcf(sampleX,sampleY,sample_size,meanX,meanY.varianceX,varianceY);	
+	double* xcf_xz = calc_xcf(sampleX,sampleZ,sample_size,meanX,meanZ.varianceX,varianceZ);	
+	double* xcf_yz = calc_xcf(sampleY,sampleZ,sample_size,meanY,meanZ.varianceY,varianceZ);	
+
+
+	//extract features
+
+	free(acf_x);
+	free(acf_y);
+	free(acf_z);
+	free(xcf_xy);
+	free(xcf_xz);
+	free(xcf_yz);
+	return features;
+}
+
 
