@@ -65,111 +65,20 @@ end
 
 
 
-%% compute correlation 
+%% Extract correlation features
 
-
-
-cross_corr = zeros(3,nposfiles+nnegfiles);
-
-for i = 1 : nposfiles+nnegfiles
-    [cross_corr(1,i), ~] = max(abs(xcorr(samples(:,1,i),samples(:,2,i))));
-    [cross_corr(2,i), ~] = max(abs(xcorr(samples(:,1,i),samples(:,3,i))));
-    [cross_corr(3,i), ~] = max(abs(xcorr(samples(:,2,i),samples(:,3,i))));
-    cross_corr(:,i) = cross_corr(:,i) / norm(cross_corr(:,i),2);
-end
-%20 lags default for auto corr
 lag = 30;
-auto_corr = zeros(lag+1,3,nposfiles+nnegfiles);
-pauto_corr = zeros(lag+1,3,nposfiles+nnegfiles);
-auto_corr_pos = zeros(lag+1,nposfiles+nnegfiles);
-auto_corr_neg = zeros(lag+1,nposfiles+nnegfiles);
-
-for i = 1 : nposfiles+nnegfiles
-    auto_corr(:,1,i) = autocorr(samples(:,1,i),lag);
-    auto_corr(:,2,i) = autocorr(samples(:,2,i),lag);
-    auto_corr(:,3,i) = autocorr(samples(:,3,i),lag);
-    pauto_corr(:,1,i) = parcorr(samples(:,1,i),lag);
-    pauto_corr(:,2,i) = parcorr(samples(:,2,i),lag);
-    pauto_corr(:,3,i) = parcorr(samples(:,3,i),lag);
-    auto_corr_neg(1,i) = sum(auto_corr(:,3,i)<0);
-    auto_corr_pos(1,i) = size(auto_corr,1)-auto_corr_neg(1,i);
-end
-
-auto_corr_flat = auto_corr_pos - auto_corr_neg;
-
-sum_auto = zeros(nposfiles+nnegfiles,3);
-min_auto = zeros(nposfiles+nnegfiles,3);
-sum_pauto = zeros(nposfiles+nnegfiles,3);
-min_pauto = zeros(nposfiles+nnegfiles,3);
-for i = 1 : nposfiles+nnegfiles
-    sum_auto(i,:) = sum(squeeze(auto_corr(:,:,i)));
-    min_auto(i,:) = min(squeeze(auto_corr(:,:,i)));
-    sum_pauto(i,:) = sum(squeeze(pauto_corr(:,:,i)));
-    min_pauto(i,:) = min(squeeze(pauto_corr(:,:,i)));
-end
-
-% attempt to use bins to utilize for which lag
-auto_bins = zeros(nposfiles+nnegfiles,3, floor(lag /6));
-%auto_bins_temp = zeros(nposfiles+nnegfiles,3 * floor(lag /6));
-for i = 1 : nposfiles+nnegfiles
-    for j = 1 : lag/6
-         auto_bins(i,:,j) = sum(squeeze(auto_corr((j-1)*floor(lag/6)+1:j*floor(lag/6),:,i)))';
-    end
-    %auto_bins_temp(i,:) = auto_bins(); 
-end
-
-
+[cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat] = extract_corr_features(samples,nposfiles,nnegfiles,lag);
 
 %% perform training and testing
 clc
-attempts = 1000;
-sumOfRatios = 0;
-countMissclassifications = zeros(nbrfiles,1);
-for i=1:attempts 
+attempts = 100;
 alpha = 0.75;
-label = zeros(nposfiles+nnegfiles,1);
-label(1:nposfiles,1) = 1;
-trainIndex = randperm(nposfiles+nnegfiles,floor(alpha*nposfiles+nnegfiles)); 
 
-index= linspace(1,nposfiles+nnegfiles,nposfiles+nnegfiles);
-testIndex = setdiff(index,trainIndex);
+[averageRatio, true_positive, false_positive, countMissclassifications] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
 
-% combine features
-%trainObservations = [squeeze(auto_corr(:,3,trainIndex))' sum_auto(trainIndex,1) min_auto(trainIndex,1)];
-trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr(:,trainIndex)'];
-trainLabels = label(trainIndex);
-%testobservations = [squeeze(auto_corr(:,3,testIndex))' sum_auto(testIndex,1) min_auto(testIndex,1)];
-testobservations = [sum_auto(testIndex,:) min_auto(testIndex,:) cross_corr(:,testIndex)' ];
-testLabels = label(testIndex);
-SVMModel = fitclinear(trainObservations,trainLabels);
-
-[pred_labels,score] = predict(SVMModel,testobservations);
-
-%pred_labels 
-%testIndex
-%score
-predictions = (pred_labels == testLabels);
-result = zeros(size(predictions,1),2);
-result(:,1) = predictions;
-result(:,2) = testIndex';
-result;
-
-
-% res = pred_labels - testLabels;
-% disp('false positve');
-% length(res(res(:)==1))
-% disp('false negative');
-% length(res(res(:)==-1))
-%testLabels-pred_labels
-ratio = sum(predictions)/size(predictions,1);
-sumOfRatios = sumOfRatios + ratio;
-failingIndexes = testIndex(result(:,1) == 0);
-
-countMissclassifications(failingIndexes,1) = countMissclassifications(failingIndexes,1) + 1;
-
-end
-
-averageRatio = sumOfRatios/attempts
-
-
-
+%% Plot decrease
+max_samples = 256;
+min_samples = 64;
+nbr_steps = 4;
+[true_positives, false_positives] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha);
