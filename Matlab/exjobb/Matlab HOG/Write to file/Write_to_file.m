@@ -6,8 +6,8 @@ write_image_to_file(I,fileID);
 fclose(fileID);
 
 
-%% Write Beta to file
-load('SVMless.mat');
+%% Write SVMModel to file
+load('SVMModel.mat');
 %load('beta.mat');
 %load('bias.mat');
 beta = SVMModel.Beta;

@@ -1,6 +1,6 @@
 %% read samples
 clear, clc, close all
-nbrOfSamples = 256;
+nbrOfSamples = 160;
 [nposfiles,nnegfiles,samples] = parse_acc_files(nbrOfSamples);
 nbrfiles = nposfiles + nnegfiles;
 %% compute non-dft values
@@ -72,13 +72,13 @@ lag = 30;
 
 %% perform training and testing
 clc
-attempts = 100;
-alpha = 0.75;
+attempts = 1;
+alpha = 1.00;
 
-[averageRatio, true_positive, false_positive, countMissclassifications] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
+[averageRatio, true_positive, false_positive, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
 
 %% Plot decrease
 max_samples = 256;
 min_samples = 64;
-nbr_steps = 4;
+nbr_steps = 8;
 [true_positives, false_positives] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha);
