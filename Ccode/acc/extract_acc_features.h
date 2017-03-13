@@ -1,7 +1,8 @@
 #ifndef extract_acc_features_h/* Include guard */
 #define extract_acc_features_h
 
-double* calc_acf(double* samples, int sample_size, double mean, double variance);
-double* calc_xcf(double* samplesX,double* samplesY, int sample_size,double stdX, double stdY);
+void calc_acf(double* samples, int sample_size, double mean, double variance,double* acf);
+void calc_xcf(double* samplesX,double* samplesY, int sample_size,double stdX, double stdY,double* xcf);
 double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sample_size);
+int get_nbr_features(void);
 #endif// FOO_H_

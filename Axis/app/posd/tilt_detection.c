@@ -16,7 +16,8 @@
 #include "datacache_posd.h"
 #include "kiss_fft.h"
 #include <time.h>
-#include "calc_acf.h"
+#include "extract_acc_features.h"
+#include "svm.h"
 #ifdef HOST
 #include "checktests/stubs/positioning_stubs.h"
 #include "checktests/stubs/stubbed_dbus.h"
@@ -85,6 +86,7 @@ static int false_positives = 0;
 #define SAMPLING_ACTIVITY 2 // choice of activity
 
 
+
 /* Introspection data for the service we are exporting */
 static const gchar introspection_xml[] =
   "<node>"
@@ -132,10 +134,12 @@ typedef struct {
   device_sample** collected_samples;
   GMutex *report_mutex;
   gboolean *tamper_triggered;
-  gint acc_x;
-  gint acc_y;
-  gint acc_z;
+  gint acc_x_at_startup;
+  gint acc_y_at_startup;
+  gint acc_z_at_startup;
 } thread_data_type;
+
+
 
 /**
  * tilt_detection_data_type:
@@ -170,9 +174,9 @@ typedef struct {
   gint observation_count;
   GMutex report_mutex;
   gboolean sample_speed_fast;
-  gint acc_x;
-  gint acc_y;
-  gint acc_z;
+  gint acc_x_at_startup;
+  gint acc_y_at_startup;
+  gint acc_z_at_startup;
 } tilt_detection_data_type;
 
 
@@ -182,6 +186,7 @@ typedef struct {
 /****************** LOCALE VARIABLE DECLARATION SECTION**********************/
 static tilt_detection_data_type *tilt_user_data = NULL;
 static GDBusNodeInfo *introspection_data = NULL;
+static svm_linear_model_data_type* svm_model = NULL;
 
 /* Event2 variables */
 static EventProducer *producer = NULL;
@@ -765,6 +770,7 @@ on_name_lost(G_GNUC_UNUSED GDBusConnection *connection,
 gboolean
 tilt_update(gint lateral, gint longitudinal)
 {
+
  if (tilt_user_data == NULL ||
     tilt_user_data->initialized == FALSE) {
     /* Not activated, just return */
@@ -780,13 +786,6 @@ tilt_update(gint lateral, gint longitudinal)
     DBG(syslog (LOG_INFO, "Startup rotation detection angle: %d\n", tilt_user_data->startup_longitudinal));
     DBG(syslog (LOG_INFO, "Tilt tampering trigger angle: %d, sensitivity: %d=%f\n", tilt_detection_get_trigger_angle(), tilt_detection_get_sensitivity(), ENERGY_POSITIVE_THRESHOLD));
   }
-	
-  //save start raw values
-  device_sample* raw_startup =  pos_lib_get_accelerometer_raw_data ();
-  tilt_user_data->acc_x = raw_startup->x;
-  tilt_user_data->acc_y = raw_startup->y;
-  tilt_user_data->acc_z = raw_startup->z;
-  free(raw_startup);
   return TRUE;
 exit:
   return FALSE;
@@ -832,7 +831,6 @@ start_record_samples(device_sample* initial_value)
   tilt_user_data->should_record_samples = TRUE;
   tilt_user_data->observing = TRUE;
   tilt_user_data->samples = 0; //incremented at the end of collect_samples()
-  //tilt_user_data->collected_samples = (int*)malloc(SAMPLES_TO_COLLECT * sizeof(int));
   tilt_user_data->collected_samples = malloc(SAMPLES_TO_COLLECT * sizeof(device_sample*));
   tilt_user_data->collected_samples[0] = initial_value;
 }
@@ -877,7 +875,11 @@ start_analyze_thread(void)
 }
 
 
-
+/**
+ * Start a new thread that saves the collected data to file.
+ * The new thread will start in save_samples_to_file(), and it'll
+ * take ownership of the thread_data_type struct provided to it.
+ */
 static void
 start_save_to_file_thread(void)
 {
@@ -893,9 +895,9 @@ start_save_to_file_thread(void)
   thread_data->report_mutex = &tilt_user_data->report_mutex;
   thread_data->tamper_triggered = &tilt_user_data->tamper_triggered;
   thread_data->collected_samples = tilt_user_data->collected_samples;
-  thread_data->acc_x = tilt_user_data->acc_x;
-  thread_data->acc_y = tilt_user_data->acc_y;
-  thread_data->acc_z = tilt_user_data->acc_z;
+  thread_data->acc_x_at_startup = tilt_user_data->acc_x_at_startup;
+  thread_data->acc_y_at_startup = tilt_user_data->acc_y_at_startup;
+  thread_data->acc_z_at_startup = tilt_user_data->acc_z_at_startup;
   tilt_user_data->collected_samples = NULL;
 
   //start thread
@@ -907,7 +909,11 @@ start_save_to_file_thread(void)
 }
 
 
-
+/**
+ * Start a new thread that classifies the collected data.
+ * The new thread will start in classify_tampering, and it'll
+ * take ownership of the thread_data_type struct provided to it.
+ */
 static void
 start_classify_tampering_thread(void)
 {
@@ -917,15 +923,14 @@ start_classify_tampering_thread(void)
   //main loop does not want to join, so set the detached attr:
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-  //syslog (LOG_INFO, "Done sampling, starting save to file thread");
   //malloc data struct. The new thread will free it:
   thread_data_type *thread_data = (thread_data_type*)malloc(sizeof(thread_data_type));
   thread_data->report_mutex = &tilt_user_data->report_mutex;
   thread_data->tamper_triggered = &tilt_user_data->tamper_triggered;
   thread_data->collected_samples = tilt_user_data->collected_samples;
-  thread_data->acc_x = tilt_user_data->acc_x;
-  thread_data->acc_y = tilt_user_data->acc_y;
-  thread_data->acc_z = tilt_user_data->acc_z;
+  thread_data->acc_x_at_startup = tilt_user_data->acc_x_at_startup;
+  thread_data->acc_y_at_startup = tilt_user_data->acc_y_at_startup;
+  thread_data->acc_z_at_startup = tilt_user_data->acc_z_at_startup;
   tilt_user_data->collected_samples = NULL;
 
   //start thread
@@ -936,7 +941,11 @@ start_classify_tampering_thread(void)
   tilt_user_data->pass_count = 0;
 }
 
-
+/**
+ * Start a new thread that analyzes the data collected.
+ * The new thread will start in analyze_samples(), and it'll
+ * take ownership of the thread_data_type struct provided to it.
+ */
 static void free_collected_samples(device_sample** data, int nbrSamples)
 {
 	int i;
@@ -1127,69 +1136,82 @@ static void* save_samples_to_file(gpointer thread_data){
     	// Put "file" then k then ".txt" in to filename.
     	snprintf(buffer, sizeof(char) * 32, "acc_sample%i", (int)time(NULL));
 	FILE* filename = g_fopen (buffer,"w");
-	g_fprintf(filename,"startup(x,y,z):(%d,%d,%d)\n",data->acc_x, data->acc_y, data->acc_z);
+	g_fprintf(filename,"startup(x,y,z):(%d,%d,%d)\n",data->acc_x_at_startup, data->acc_y_at_startup, data->acc_z_at_startup);
 	int i;
 	for(i=0;i<SAMPLES_TO_COLLECT; i++){
 		g_fprintf(filename,"%d %d %d\n",samples[i]->x, samples[i]->y,samples[i]->z);
 	
 	}
 	fclose(filename);
-	
-	//free(data->collected_samples);
-	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
-	free(data);
-	DBG(syslog (LOG_INFO, "Data has been saved"));
-	exit(0);
-	return NULL;
-}
-
-
-
-static void* classify_tampering(gpointer thread_data){
-	int lag = 20;
-	DBG(syslog (LOG_INFO, "Starting tampering classification"));
-		
-	thread_data_type *data = (thread_data_type*)thread_data; 
-	
-	
-	//gint *samples = data->collected_samples;
-	device_sample** samples = data->collected_samples;
-	
-	//temp for debug, store sample for comparison in matlab
-	char bufferRaw[32]; // The filename buffer.
-    	// Put "file" then k then ".txt" in to filename.
-    	snprintf(bufferRaw, sizeof(char) * 32, "acc_sample%i", (int)time(NULL));
-	FILE* filename = g_fopen (bufferRaw,"w");
-	g_fprintf(filename,"startup(x,y,z):(%d,%d,%d)\n",data->acc_x, data->acc_y, data->acc_z);
-	int i;
-	for(i=0;i<SAMPLES_TO_COLLECT; i++){
-		g_fprintf(filename,"%d %d %d\n",samples[i]->x, samples[i]->y,samples[i]->z);
-	
-	}
-	fclose(filename);
-
-	
-	double* sample_z = malloc(sizeof(double)*SAMPLES_TO_COLLECT);	
-	for(i=0;i<SAMPLES_TO_COLLECT; i++){
-		sample_z[i]=samples[i]->z;
-	}
-	double* acf = calc_acf(sample_z,SAMPLES_TO_COLLECT,lag);
-
-	char buffer[32]; // The filename buffer.
-    	// Put "file" then k then ".txt" in to filename.
-    	snprintf(buffer, sizeof(char) * 32, "acf_of_sample%i", (int)time(NULL));
-	filename = g_fopen (buffer,"w");
-	for(i=0;i<=lag; i++){
-		g_fprintf(filename,"%f\n",acf[i]);
-	}
-	fclose(filename);
-	
 	
 	//free(data->collected_samples);
 	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
 	free(data);
 	DBG(syslog (LOG_INFO, "Data has been saved"));
 	//exit(0);
+	return NULL;
+}
+
+
+
+static void* classify_tampering(gpointer thread_data){
+	DBG(syslog (LOG_INFO, "Starting tampering classification"));
+	
+	
+	thread_data_type *data = (thread_data_type*)thread_data; 
+	
+	
+	//gint *samples = data->collected_samples;
+	device_sample** samples = data->collected_samples;
+	
+/*
+	//temp for debug, store sample for comparison in matlab
+	char bufferRaw[32]; // The filename buffer.
+    	// Put "file" then k then ".txt" in to filename.
+    	snprintf(bufferRaw, sizeof(char) * 32, "acc_sample%i", (int)time(NULL));
+	FILE* filename = g_fopen (bufferRaw,"w");
+	g_fprintf(filename,"startup(x,y,z):(%d,%d,%d)\n",data->acc_x_at_startup, data->acc_y_at_startup, data->acc_z_at_startup);
+	int i;
+	for(i=0;i<SAMPLES_TO_COLLECT; i++){
+		g_fprintf(filename,"%d %d %d\n",samples[i]->x, samples[i]->y,samples[i]->z);
+	
+	}
+	fclose(filename);
+*/
+	//onödigt ? kolla senare
+	int i;
+	double* sample_z = malloc(sizeof(double)*SAMPLES_TO_COLLECT);
+	double* sample_x = malloc(sizeof(double)*SAMPLES_TO_COLLECT);
+	double* sample_y = malloc(sizeof(double)*SAMPLES_TO_COLLECT);	
+	for(i=0;i<SAMPLES_TO_COLLECT; i++){
+		sample_z[i]=samples[i]->z - data->acc_z_at_startup;
+		sample_x[i]=samples[i]->x - data->acc_x_at_startup;
+		sample_y[i]=samples[i]->y - data->acc_y_at_startup;
+	}
+	
+	t1 = clock(); 
+	double* features = extract_features(sample_x,sample_y,sample_z,SAMPLES_TO_COLLECT);
+	t2 = clock(); 
+	float diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	DBG(syslog (LOG_INFO, "tampering classifying time: %f",diff)); 
+
+	double score = predict(features,svm_model,get_nbr_features());
+	
+	if(score > 0)
+	{
+		DBG(syslog (LOG_INFO, "tampering with score %f\n",score));
+		tilt_trigger_tampering();
+	}else
+	{
+		DBG(syslog (LOG_INFO, "not tampering with score %f\n",score));
+	}
+	//free all	
+	free(features);
+	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
+	free(data);
+	free(sample_x);
+	free(sample_y);
+	free(sample_z);
 	return NULL;
 }
 
@@ -1797,7 +1819,7 @@ tilt_detection_init(void)
         "%s called, needed to deallocate previous user_data.", __FUNCTION__);
     g_free (tilt_user_data);
   }
-
+  DBG(syslog (LOG_INFO, "INIT"));
   tilt_user_data = g_malloc0(sizeof(*tilt_user_data));
   tilt_user_data->initialized = FALSE;
   tilt_user_data->trigger_angle = DEFAULT_TILT_DETECTION_TRIGGER_ANGLE;
@@ -1814,6 +1836,15 @@ tilt_detection_init(void)
   tilt_user_data->observation_count = 0;
   tilt_user_data->sample_speed_fast = FALSE;
   g_mutex_init(&tilt_user_data->report_mutex);
+
+  device_sample* raw_startup =  pos_lib_get_accelerometer_raw_data ();
+  tilt_user_data->acc_x_at_startup = raw_startup->x;
+  tilt_user_data->acc_y_at_startup = raw_startup->y;
+  tilt_user_data->acc_z_at_startup = raw_startup->z;
+  free(raw_startup);
+
+  // READ SVM MODEL HERE
+  svm_model = read_linear_svm_model("/tmp/svm_params", get_nbr_features());
 
   if (posd_get_tilt_detection_params(
       &tilt_user_data->enabled,
@@ -1877,6 +1908,12 @@ tilt_detection_finalize(void)
   if (tilt_user_data != NULL) {
     g_free(tilt_user_data);
     tilt_user_data = NULL;
+  }
+
+  if(svm_model != NULL)
+  {
+    g_free(svm_model->beta);
+    g_free(svm_model);
   }
 }
 
