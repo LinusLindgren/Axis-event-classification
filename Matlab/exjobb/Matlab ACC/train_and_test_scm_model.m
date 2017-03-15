@@ -15,10 +15,29 @@ testIndex = setdiff(index,trainIndex);
 
 % combine features
 %trainObservations = [squeeze(auto_corr(:,3,trainIndex))' sum_auto(trainIndex,1) min_auto(trainIndex,1)];
-trainObservations =  [sum_auto(trainIndex,[1,3]) min_auto(trainIndex,[1,3])  cross_corr_max(2,trainIndex)' ];
+trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' ];
 trainLabels = label(trainIndex);
 %testobservations = [squeeze(auto_corr(:,3,testIndex))' sum_auto(testIndex,1) min_auto(testIndex,1)];
-testobservations = [sum_auto(testIndex,[1,3]) min_auto(testIndex,[1,3]) cross_corr_max(2,testIndex)' ];
+testobservations = [sum_auto(testIndex,:) min_auto(testIndex,:) cross_corr_max(2,testIndex)' ];
+
+mean_train = mean(trainObservations);
+std_train = std(trainObservations);
+%mean_train(:,1:3) = mean_train(:,1:3)*2;
+%trainObservations = trainObservations - repmat(mean_train,size(trainObservations,1),1);
+%testobservations = testobservations - repmat(mean_train,size(testobservations,1),1);
+%trainObservations = trainObservations ./ repmat(std_train,size(trainObservations,1),1);
+%testobservations = testobservations ./ repmat(std_train,size(testobservations,1),1);
+
+trainObservations(:,7) = trainObservations(:,7) - repmat(mean_train(1,7),size(trainObservations,1),1);
+testobservations(:,7) = testobservations(:,7) - repmat(mean_train(1,7),size(testobservations,1),1);
+trainObservations(:,7) = trainObservations(:,7) ./ repmat(std_train(1,7),size(trainObservations,1),1);
+testobservations(:,7) = testobservations(:,7) ./ repmat(std_train(1,7),size(testobservations,1),1);
+
+%trainObservations(:,1:3) = trainObservations(:,1:3) - repmat(mean_train(1,1:3),size(trainObservations,1),1);
+%testobservations(:,1:3) = testobservations(:,1:3) - repmat(mean_train(1,1:3),size(testobservations,1),1);
+%trainObservations(:,1:3) = trainObservations(:,1:3) ./ repmat(std_train(1,1:3),size(trainObservations,1),1);
+%testobservations(:,1:3) = testobservations(:,1:3) ./ repmat(std_train(1,1:3),size(testobservations,1),1);
+
 testLabels = label(testIndex);
 SVMModel = fitclinear(trainObservations,trainLabels);
 

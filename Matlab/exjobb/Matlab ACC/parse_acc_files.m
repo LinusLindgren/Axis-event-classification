@@ -1,8 +1,8 @@
-function [nposfiles,nnegfiles, samples ] = parse_acc_files(nbrOfSamples)
+function [nposfiles,nnegfiles, samples ] = parse_acc_files(nbrOfSamples, pos_path, neg_path)
 
-posAccfiles = dir('exjobb\Axis-event-classification\acc_data\postempWOhard\acc*');      
+posAccfiles = dir(pos_path);      
 nposfiles = length(posAccfiles);    % Number of files found
-negAccfiles = dir('exjobb\Axis-event-classification\acc_data\negtemp\acc*');      
+negAccfiles = dir(neg_path);      
 nnegfiles = length(negAccfiles);    % Number of files found
 nbrFiles = nnegfiles + nposfiles;
 samples = zeros(nbrOfSamples,3,nbrFiles);

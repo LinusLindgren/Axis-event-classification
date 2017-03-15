@@ -1,7 +1,24 @@
 %% read samples
 clear, clc, close all
-nbrOfSamples = 160;
-[nposfiles,nnegfiles,samples] = parse_acc_files(nbrOfSamples);
+nbrOfSamples = 256;
+
+[nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'exjobb\Axis-event-classification\acc_data\postempWOhard\acc*' ...
+, 'exjobb\Axis-event-classification\acc_data\negtempWOhard\acc*');
+%[samples1, ~] = convert_freq(samples1,200,100);
+%nposfiles1=0;
+%nnegfiles1=0;
+
+[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'exjobb\Axis-event-classification\acc_data\freq400WOhard\pos\acc*' ...
+, 'exjobb\Axis-event-classification\acc_data\freq400WOhard\neg\acc*');
+[samples2, ~] = convert_freq(samples2,400,200);
+
+%used to concatinate two sample sets correctly
+nbrfiles1 = nposfiles1 + nnegfiles1; 
+nbrfiles2 = nposfiles2 + nnegfiles2;
+samples = cat(3,samples1(:,:,1:nposfiles1), samples2(:,:,1:nposfiles2), samples1(:,:, nposfiles1+1:nbrfiles1), samples2(:,:,nposfiles2+1:nbrfiles2));
+%samples = samples2;
+nposfiles = nposfiles1+nposfiles2;
+nnegfiles = nnegfiles1+nnegfiles2;
 nbrfiles = nposfiles + nnegfiles;
 %% compute non-dft values
 tiltXZ = calc_tilt(samples(:,3,:),samples(:,1,:),nbrOfSamples);
@@ -72,13 +89,13 @@ lag = 30;
 
 %% perform training and testing
 clc
-attempts = 1;
-alpha = 1.00;
+attempts = 1000;
+alpha = 0.75;
 
 [averageRatio, true_positive, false_positive, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
 
 %% Plot decrease
 max_samples = 256;
 min_samples = 64;
-nbr_steps = 8;
-[true_positives, false_positives] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha);
+nbr_steps = 2;
+[max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha);
