@@ -2,21 +2,21 @@
 clear, clc, close all
 nbrOfSamples = 256;
 
-[nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'exjobb\Axis-event-classification\acc_data\postempWOhard\acc*' ...
-, 'exjobb\Axis-event-classification\acc_data\negtempWOhard\acc*');
+[nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'acc_data\postempWOhard\acc*' ...
+, 'acc_data\negtempWOhard\acc*');
 %[samples1, ~] = convert_freq(samples1,200,100);
-%nposfiles1=0;
-%nnegfiles1=0;
+nposfiles1=0;
+nnegfiles1=0;
 
-[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'exjobb\Axis-event-classification\acc_data\freq400WOhard\pos\acc*' ...
-, 'exjobb\Axis-event-classification\acc_data\freq400WOhard\neg\acc*');
+[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400WOhard\pos\acc*' ...
+, 'acc_data\freq400WOhard\neg\acc*');
 [samples2, ~] = convert_freq(samples2,400,200);
 
 %used to concatinate two sample sets correctly
 nbrfiles1 = nposfiles1 + nnegfiles1; 
 nbrfiles2 = nposfiles2 + nnegfiles2;
-samples = cat(3,samples1(:,:,1:nposfiles1), samples2(:,:,1:nposfiles2), samples1(:,:, nposfiles1+1:nbrfiles1), samples2(:,:,nposfiles2+1:nbrfiles2));
-%samples = samples2;
+%samples = cat(3,samples1(:,:,1:nposfiles1), samples2(:,:,1:nposfiles2), samples1(:,:, nposfiles1+1:nbrfiles1), samples2(:,:,nposfiles2+1:nbrfiles2));
+samples = samples2;
 nposfiles = nposfiles1+nposfiles2;
 nnegfiles = nnegfiles1+nnegfiles2;
 nbrfiles = nposfiles + nnegfiles;
