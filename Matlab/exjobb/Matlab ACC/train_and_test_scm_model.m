@@ -1,7 +1,8 @@
-function [averageRatio, true_positive_ratio, false_positive_ratio, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles, nnegfiles, sum_auto, min_auto, cross_corr_max)
+function [averageTestRatio, averageTrainRatio, true_positive_ratio, false_positive_ratio, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles, nnegfiles, sum_auto, min_auto, cross_corr_max)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-sumOfRatios = 0;
+sumOfRatios_test = 0;
+sumOfRatios_train = 0;
 false_positive_sum = 0;
 true_positive_sum = 0;
 countMissclassifications = zeros(nposfiles+nnegfiles,1);
@@ -40,31 +41,38 @@ testobservations(:,7) = testobservations(:,7) ./ repmat(std_train(1,7),size(test
 
 testLabels = label(testIndex);
 SVMModel = fitclinear(trainObservations,trainLabels);
+%Try and predict values with the calculated SVMModel for both the train and
+%test data.
+[pred_labels_train,~] = predict(SVMModel,trainObservations);
+[pred_labels_test,~] = predict(SVMModel,testobservations);
 
-[pred_labels,score] = predict(SVMModel,testobservations);
+predictions_train = (pred_labels_train == trainLabels);
+predictions_test = (pred_labels_test == testLabels);
 
-%pred_labels 
-%testIndex
-%score
-predictions = (pred_labels == testLabels);
-result = zeros(size(predictions,1),2);
-result(:,1) = predictions;
+%Used for counting misclassifications on the individual samples.
+result = zeros(size(predictions_test,1),2);
+result(:,1) = predictions_test;
 result(:,2) = testIndex';
 
-res = pred_labels - testLabels;
-false_positive = length(res(res(:)==1))/(size(testLabels,1)-sum(testLabels));
-true_positive = 1 - length(res(res(:)==-1))/sum(testLabels);
+res_test = pred_labels_test - testLabels;
+false_positive = length(res_test(res_test(:)==1))/(size(testLabels,1)-sum(testLabels));
+true_positive = 1 - length(res_test(res_test(:)==-1))/sum(testLabels);
 false_positive_sum = false_positive_sum + false_positive;
 true_positive_sum = true_positive_sum + true_positive;
-ratio = sum(predictions)/size(predictions,1);
-sumOfRatios = sumOfRatios + ratio;
+
+ratio_train = sum(predictions_train)/size(predictions_train,1);
+sumOfRatios_train = sumOfRatios_train + ratio_train;
+ratio_test = sum(predictions_test)/size(predictions_test,1);
+sumOfRatios_test = sumOfRatios_test + ratio_test;
+
 failingIndexes = testIndex(result(:,1) == 0);
 
 countMissclassifications(failingIndexes,1) = countMissclassifications(failingIndexes,1) + 1;
 
 end
 
-averageRatio = sumOfRatios/attempts;
+averageTestRatio = sumOfRatios_test/attempts;
+averageTrainRatio = sumOfRatios_train/attempts;
 true_positive_ratio = true_positive_sum/attempts;
 false_positive_ratio = false_positive_sum/attempts; 
 end

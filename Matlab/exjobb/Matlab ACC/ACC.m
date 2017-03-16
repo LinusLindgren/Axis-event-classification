@@ -2,11 +2,11 @@
 clear, clc, close all
 nbrOfSamples = 256;
 
-[nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'acc_data\postempWOhard\acc*' ...
-, 'acc_data\negtempWOhard\acc*');
+[nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'acc_data\postemp\acc*' ...
+, 'acc_data\negtemp\acc*');
 %[samples1, ~] = convert_freq(samples1,200,100);
-nposfiles1=0;
-nnegfiles1=0;
+%nposfiles1=0;
+%nnegfiles1=0;
 
 [nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400WOhard\pos\acc*' ...
 , 'acc_data\freq400WOhard\neg\acc*');
@@ -15,8 +15,8 @@ nnegfiles1=0;
 %used to concatinate two sample sets correctly
 nbrfiles1 = nposfiles1 + nnegfiles1; 
 nbrfiles2 = nposfiles2 + nnegfiles2;
-%samples = cat(3,samples1(:,:,1:nposfiles1), samples2(:,:,1:nposfiles2), samples1(:,:, nposfiles1+1:nbrfiles1), samples2(:,:,nposfiles2+1:nbrfiles2));
-samples = samples2;
+samples = cat(3,samples1(:,:,1:nposfiles1), samples2(:,:,1:nposfiles2), samples1(:,:, nposfiles1+1:nbrfiles1), samples2(:,:,nposfiles2+1:nbrfiles2));
+%samples = samples2;
 nposfiles = nposfiles1+nposfiles2;
 nnegfiles = nnegfiles1+nnegfiles2;
 nbrfiles = nposfiles + nnegfiles;
@@ -92,10 +92,26 @@ clc
 attempts = 1000;
 alpha = 0.75;
 
-[averageRatio, true_positive, false_positive, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
+maxAlpha = 0.95;
+minAlpha = 0.05;
+alphas = minAlpha:0.05:maxAlpha;
+training_precision = zeros(size(alphas));
+testing_precision = zeros(size(alphas));
 
+count = 1;
+for i=minAlpha:0.05:maxAlpha
+[averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
+training_precision(count) = averageTrainRatio;
+testing_precision(count) = averageTestRatio;
+count = count + 1;
+end
+
+figure;
+plot( alphas, training_precision, 'b');
+hold on;
+plot( alphas, testing_precision, 'g');
 %% Plot decrease
 max_samples = 256;
 min_samples = 64;
-nbr_steps = 2;
+nbr_steps = 32;
 [max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha);
