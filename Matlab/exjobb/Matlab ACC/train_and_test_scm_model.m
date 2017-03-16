@@ -15,11 +15,11 @@ index= linspace(1,nposfiles+nnegfiles,nposfiles+nnegfiles);
 testIndex = setdiff(index,trainIndex);
 
 % combine features
-%trainObservations = [squeeze(auto_corr(:,3,trainIndex))' sum_auto(trainIndex,1) min_auto(trainIndex,1)];
-trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' ];
+%trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' ];
+trainObservations =  [sum_auto(trainIndex,:) cross_corr_max(2,trainIndex)' ];
 trainLabels = label(trainIndex);
 %testobservations = [squeeze(auto_corr(:,3,testIndex))' sum_auto(testIndex,1) min_auto(testIndex,1)];
-testobservations = [sum_auto(testIndex,:) min_auto(testIndex,:) cross_corr_max(2,testIndex)' ];
+testobservations = [sum_auto(testIndex,:) cross_corr_max(2,testIndex)' ];
 
 mean_train = mean(trainObservations);
 std_train = std(trainObservations);
@@ -29,7 +29,7 @@ std_train = std(trainObservations);
 %trainObservations = trainObservations ./ repmat(std_train,size(trainObservations,1),1);
 %testobservations = testobservations ./ repmat(std_train,size(testobservations,1),1);
 
-trainObservations(:,7) = trainObservations(:,7) - repmat(mean_train(1,7),size(trainObservations,1),1);
+trainObservations(:,7)= trainObservations(:,7) - repmat(mean_train(1,7),size(trainObservations,1),1);
 testobservations(:,7) = testobservations(:,7) - repmat(mean_train(1,7),size(testobservations,1),1);
 trainObservations(:,7) = trainObservations(:,7) ./ repmat(std_train(1,7),size(trainObservations,1),1);
 testobservations(:,7) = testobservations(:,7) ./ repmat(std_train(1,7),size(testobservations,1),1);

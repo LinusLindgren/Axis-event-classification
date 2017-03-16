@@ -8,8 +8,8 @@ nbrOfSamples = 256;
 %nposfiles1=0;
 %nnegfiles1=0;
 
-[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400WOhard\pos\acc*' ...
-, 'acc_data\freq400WOhard\neg\acc*');
+[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400\postemp\acc*' ...
+, 'acc_data\freq400\negtemp\acc*');
 [samples2, ~] = convert_freq(samples2,400,200);
 
 %used to concatinate two sample sets correctly
@@ -92,24 +92,15 @@ clc
 attempts = 1000;
 alpha = 0.75;
 
-maxAlpha = 0.95;
-minAlpha = 0.05;
-alphas = minAlpha:0.05:maxAlpha;
-training_precision = zeros(size(alphas));
-testing_precision = zeros(size(alphas));
+[~, average_ratio, true_positive, false_positive, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
+%% plot train and testing ratio over alpha
+max_alpha = 1.00;
+min_alpha = 0.05;
 
-count = 1;
-for i=minAlpha:0.05:maxAlpha
-[averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
-training_precision(count) = averageTrainRatio;
-testing_precision(count) = averageTestRatio;
-count = count + 1;
-end
 
-figure;
-plot( alphas, training_precision, 'b');
-hold on;
-plot( alphas, testing_precision, 'g');
+
+[training_precision, testing_precision] = plot_ratio_over_alpha(min_alpha, max_alpha, attempts, cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat, nposfiles, nnegfiles);
+
 %% Plot decrease
 max_samples = 256;
 min_samples = 64;
