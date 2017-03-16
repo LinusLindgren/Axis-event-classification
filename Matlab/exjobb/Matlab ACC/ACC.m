@@ -33,7 +33,7 @@ meanTiltFeatures = [mean(tiltXY,1); mean(tiltXZ,1) ;mean(tiltYZ,1)];
 
 stdFeatures =  squeeze(std(samples,0,1));
 stdTiltFeatures =  [std(tiltXY,0,1); std(tiltXZ,0,1) ;std(tiltYZ,0,1)];
-
+sumFeatures = squeeze(sum(samples,1));
 maxFeatures = squeeze(max(samples,[],1));
 minFeatures = squeeze(min(samples,[],1));
 maxTiltFeatures = [max(tiltXY,[],1); max(tiltXZ,[],1) ;max(tiltYZ,[],1)];
@@ -52,19 +52,20 @@ dft_tilt = calc_dft(tiltAsSamp,nposfiles,nnegfiles,nbrOfSamples);
 [sortedValuesSamplesY,sortIndexSamplesY] = sort(dft_samples(:,2,:),'descend');
 [sortedValuesSamplesZ,sortIndexSamplesZ] = sort(dft_samples(:,3,:),'descend');
 %dft_samples_k_max_freq = zeros(5*3*(nposfiles+nnegfiles),1);
-dft_samples_k_max_freq = zeros(5,nposfiles+nnegfiles);
-dft_samples_k_max_val = zeros(5,nposfiles+nnegfiles);
+max_k_freq = 5;
+dft_samples_k_max_freq = zeros(max_k_freq,nposfiles+nnegfiles);
+dft_samples_k_max_val = zeros(max_k_freq,nposfiles+nnegfiles);
 
 
 [sortedValuesTiltX,sortIndexTiltX] = sort(dft_tilt(:,1,:),'descend');
 [sortedValuesTiltY,sortIndexTiltY] = sort(dft_tilt(:,2,:),'descend');
 [sortedValuesTiltZ,sortIndexTiltZ] = sort(dft_tilt(:,3,:),'descend');
-dft_tilt_k_max_freq = zeros(5,nposfiles+nnegfiles);
-dft_tilt_k_max_val = zeros(5,nposfiles+nnegfiles);
+dft_tilt_k_max_freq = zeros(max_k_freq,nposfiles+nnegfiles);
+dft_tilt_k_max_val = zeros(max_k_freq,nposfiles+nnegfiles);
 
 for i = 1 : nposfiles+nnegfiles
         %startIndex = (i-1)*15+1
-        for k = 1 : 5
+        for k = 1 : max_k_freq
     dft_samples_k_max_freq(k,i) = squeeze(sortIndexSamplesX(k,1,i));
     dft_samples_k_max_freq(k,i) = squeeze(sortIndexSamplesY(k,1,i));
     dft_samples_k_max_freq(k,i) = squeeze(sortIndexSamplesZ(k,1,i));
@@ -92,7 +93,7 @@ clc
 attempts = 1000;
 alpha = 0.75;
 
-[~, average_ratio, true_positive, false_positive, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
+[~, average_ratio, true_positive, false_positive, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max,auto_corr_flat ,auto_bins,meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures,maxTiltFeatures,minTiltFeatures);
 %% plot train and testing ratio over alpha
 max_alpha = 1.00;
 min_alpha = 0.05;

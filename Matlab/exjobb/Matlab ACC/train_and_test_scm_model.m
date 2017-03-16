@@ -1,4 +1,5 @@
-function [averageTestRatio, averageTrainRatio, true_positive_ratio, false_positive_ratio, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles, nnegfiles, sum_auto, min_auto, cross_corr_max)
+function [averageTestRatio, averageTrainRatio, true_positive_ratio, false_positive_ratio, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles, nnegfiles, sum_auto, min_auto, cross_corr_max, auto_corr_flat, auto_bins, ...
+    meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures,maxTiltFeatures,minTiltFeatures)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 sumOfRatios_test = 0;
@@ -16,10 +17,14 @@ testIndex = setdiff(index,trainIndex);
 
 % combine features
 %trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' ];
-trainObservations =  [sum_auto(trainIndex,:) cross_corr_max(2,trainIndex)' ];
+%ONES = rand(size(cross_corr_max));
+trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' meanFeatures(:,trainIndex)' ...
+    stdFeatures(:,trainIndex)' sumFeatures(:,trainIndex)' minFeatures(:,trainIndex)' ...
+maxFeatures(:,trainIndex)'];
 trainLabels = label(trainIndex);
 %testobservations = [squeeze(auto_corr(:,3,testIndex))' sum_auto(testIndex,1) min_auto(testIndex,1)];
-testobservations = [sum_auto(testIndex,:) cross_corr_max(2,testIndex)' ];
+testobservations = [sum_auto(testIndex,:) min_auto(testIndex,:) cross_corr_max(2,testIndex)' meanFeatures(:,testIndex)' ... 
+    stdFeatures(:,testIndex)' sumFeatures(:,testIndex)' minFeatures(:,testIndex)' maxFeatures(:,testIndex)' ];
 
 mean_train = mean(trainObservations);
 std_train = std(trainObservations);
@@ -29,10 +34,10 @@ std_train = std(trainObservations);
 %trainObservations = trainObservations ./ repmat(std_train,size(trainObservations,1),1);
 %testobservations = testobservations ./ repmat(std_train,size(testobservations,1),1);
 
-trainObservations(:,7)= trainObservations(:,7) - repmat(mean_train(1,7),size(trainObservations,1),1);
-testobservations(:,7) = testobservations(:,7) - repmat(mean_train(1,7),size(testobservations,1),1);
-trainObservations(:,7) = trainObservations(:,7) ./ repmat(std_train(1,7),size(trainObservations,1),1);
-testobservations(:,7) = testobservations(:,7) ./ repmat(std_train(1,7),size(testobservations,1),1);
+trainObservations= trainObservations - repmat(mean_train,size(trainObservations,1),1);
+testobservations = testobservations - repmat(mean_train,size(testobservations,1),1);
+trainObservations = trainObservations ./ repmat(std_train,size(trainObservations,1),1);
+testobservations = testobservations ./ repmat(std_train,size(testobservations,1),1);
 
 %trainObservations(:,1:3) = trainObservations(:,1:3) - repmat(mean_train(1,1:3),size(trainObservations,1),1);
 %testobservations(:,1:3) = testobservations(:,1:3) - repmat(mean_train(1,1:3),size(testobservations,1),1);
