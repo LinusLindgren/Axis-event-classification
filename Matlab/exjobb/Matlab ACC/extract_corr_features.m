@@ -22,8 +22,8 @@ end
 %20 lags default for auto corr
 auto_corr = zeros(lag+1,3,nposfiles+nnegfiles);
 pauto_corr = zeros(lag+1,3,nposfiles+nnegfiles);
-auto_corr_pos = zeros(lag+1,nposfiles+nnegfiles);
-auto_corr_neg = zeros(lag+1,nposfiles+nnegfiles);
+auto_corr_pos = zeros(1,nposfiles+nnegfiles);
+auto_corr_neg = zeros(1,nposfiles+nnegfiles);
 
 for i = 1 : nposfiles+nnegfiles
     auto_corr(:,1,i) = autocorr(samples(:,1,i),lag);
@@ -36,7 +36,8 @@ for i = 1 : nposfiles+nnegfiles
     auto_corr_pos(1,i) = size(auto_corr,1)-auto_corr_neg(1,i);
 end
 
-auto_corr_flat = auto_corr_pos - auto_corr_neg;
+%auto_corr_flat = auto_corr_pos - auto_corr_neg;
+auto_corr_flat = [auto_corr_pos ;auto_corr_neg];
 
 sum_auto = zeros(nposfiles+nnegfiles,3);
 min_auto = zeros(nposfiles+nnegfiles,3);
