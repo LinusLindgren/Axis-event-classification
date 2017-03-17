@@ -1,4 +1,4 @@
-function [max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha)
+function [max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file)
 start_lag = 25;
 end_lag = 26;
 
@@ -11,7 +11,7 @@ for lag = start_lag : end_lag
     for i=1:nbr_steps+1
     
     [cross_corr_max, sum_auto, min_auto, ~, ~, ~, ~] = extract_corr_features(samples(1:current_amount_of_samples,:,:),nposfiles,nnegfiles,lag);
-    [~, true_positive, false_positive, ~] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max);
+    [~, true_positive, false_positive, ~] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max, write_svm_model_to_file);
     true_positives(lag-start_lag+1,i) = true_positive;
     false_positives(lag-start_lag+1,i) = false_positive;
     current_amount_of_samples = current_amount_of_samples - step_length
