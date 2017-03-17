@@ -21,7 +21,7 @@ double predict(double* features, svm_linear_model_data_type* svm_model, int nbr_
 	int i;
 	for(i = 0; i< nbr_features; i++)
 	{
-		score += features[i]*svm_model->beta[i];
+		score += features[i] * svm_model->beta[i];
 	}
 	return score;
 }
@@ -41,15 +41,27 @@ svm_linear_model_data_type* read_linear_svm_model(char* path, int nbr_features)
 	svm_linear_model_data_type* svm_model = malloc(sizeof(svm_linear_model_data_type));
 	FILE *fp;
 	double* beta= malloc(sizeof(double)*nbr_features);
+	double* features_mean = malloc(sizeof(double)*nbr_features);
+	double* features_std = malloc(sizeof(double)*nbr_features);
 	int i;
 
 	fp = fopen(path, "rb");
+	for(i=0; i <nbr_features; i++)
+	{
+		fscanf(fp, "%lf\n", &features_mean[i]);
+	}
+	for(i=0; i <nbr_features; i++)
+	{
+		fscanf(fp, "%lf\n", &features_std[i]);
+	}
 	fscanf(fp,"%lf\n",&(svm_model->bias));
 	for(i=0; i <nbr_features; i++)
 	{
 		fscanf(fp, "%lf\n", &beta[i]);
 	}
    	fclose(fp);
-	svm_model->beta=beta;	
+	svm_model->beta=beta;
+	svm_model->features_mean = features_mean;
+	svm_model->features_std = features_std;	
 	return svm_model;
 }
