@@ -140,7 +140,7 @@ der_sum_auto_corr = squeeze(sum(derivate_auto_corr,1));
 
 %% perform training and testing
 clc
-write_svm_model_to_file = 1;
+write_svm_model_to_file = 0;
 attempts = 1000;
 alpha = 0.75;
 
