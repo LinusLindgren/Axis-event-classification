@@ -53,6 +53,10 @@ testobservations = testobservations ./ repmat(std_train,size(testobservations,1)
 %testobservations(:,1:3) = testobservations(:,1:3) ./ repmat(std_train(1,1:3),size(testobservations,1),1);
 
 testLabels = label(testIndex);
+%Above model is a K-Nearest neighbour, temporary name is nice
+%SVMModel = fitctree(trainObservations,trainLabels);
+%SVMModel = TreeBagger(10,trainObservations,trainLabels)
+%SVMModel = fitcknn(trainObservations,trainLabels,'NumNeighbors',15,'Standardize',1);
 SVMModel = fitclinear(trainObservations,trainLabels);
 %Try and predict values with the calculated SVMModel for both the train and
 %test data.
