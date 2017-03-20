@@ -20,16 +20,20 @@ testIndex = setdiff(index,trainIndex);
 % combine features
 %trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' ];
 %ONES = rand(size(cross_corr_max));
+%Kurotisis_acor i z-led 0.0016
+%
 trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' meanFeatures(:,trainIndex)' ...
  minFeatures(:,trainIndex)' ...
 maxFeatures(:,trainIndex)' kurtosis(trainIndex,:) skewness(trainIndex,:) kurtosis_acor(trainIndex,:) skewness_acor(trainIndex,:) ...
 sum_changes(:,trainIndex)' mean_changes(:,trainIndex)' ];
+%trainObservations = [ sum_changes(2,trainIndex)'  min_auto(trainIndex,3)];
+%trainObservations = ONES(2,trainIndex)';
 trainLabels = label(trainIndex);
-%testobservations = [squeeze(auto_corr(:,3,testIndex))' sum_auto(testIndex,1) min_auto(testIndex,1)];
+%testobservations = ONES(2,testIndex)';
 testobservations = [sum_auto(testIndex,:) min_auto(testIndex,:) cross_corr_max(2,testIndex)' meanFeatures(:,testIndex)' ... 
  minFeatures(:,testIndex)' maxFeatures(:,testIndex)' kurtosis(testIndex,:) skewness(testIndex,:) kurtosis_acor(testIndex,:) skewness_acor(testIndex,:) ...
  sum_changes(:,testIndex)' mean_changes(:,testIndex)'];
-
+%testobservations = [ sum_changes(2,testIndex)'  min_auto(testIndex,3)];
 mean_train = mean(trainObservations);
 std_train = std(trainObservations);
 %mean_train(:,1:3) = mean_train(:,1:3)*2;
@@ -82,6 +86,7 @@ end
 if(write_svm_model_to_file)
     write_svm_model(SVMModel,mean_train, std_train);
 end
+
 averageTestRatio = sumOfRatios_test/attempts;
 averageTrainRatio = sumOfRatios_train/attempts;
 true_positive_ratio = true_positive_sum/attempts;

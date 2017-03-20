@@ -1,16 +1,18 @@
 %% read samples
 clear, clc, close all
 nbrOfSamples = 256;
-
+freq_before = 400;
+freq_after = 200;
 [nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'acc_data\postemp\acc*' ...
 , 'acc_data\negtemp\acc*');
+
 %[samples1, ~] = convert_freq(samples1,200,100);
 %nposfiles1=0;
 %nnegfiles1=0;
 
-[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400\postemp\acc*' ...
+[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * (freq_before/freq_after),'acc_data\freq400\postemp\acc*' ...
 , 'acc_data\freq400\negtemp\acc*');
-[samples2, ~] = convert_freq(samples2,400,200);
+[samples2, ~] = convert_freq(samples2,freq_before,freq_after);
 
 %used to concatinate two sample sets correctly
 nbrfiles1 = nposfiles1 + nnegfiles1; 
@@ -151,6 +153,9 @@ alpha = 0.75;
 maxTiltFeatures,minTiltFeatures, skewness_samples, kurtosis_samples, sum_changes, mean_changes, ...
 der_min, der_max, der_mean, der_sum ,sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor_samples, kurtosis_acor_samples, ...
 sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file);
+%% plot feature clustering
+plot_feature_clustering(sum_changes(2,:), min_auto(:,3)',nposfiles,nnegfiles);
+
 
 %% plot train and testing ratio over alpha
 max_alpha = 1.00;
