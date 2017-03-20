@@ -6,23 +6,7 @@ write_image_to_file(I,fileID);
 fclose(fileID);
 
 
-%% Write SVMModel to file
-load('SVMModel.mat');
-%load('beta.mat');
-%load('bias.mat');
-beta = SVMModel.Beta;
-bias = SVMModel.Bias;
 
-fileID = fopen('svm_params','w');
-formatSpec = '%f\n';
-nbrElements = size(beta,1);
-
-fprintf(fileID,formatSpec,bias);
-for i=1:nbrElements
-    
-    fprintf(fileID,formatSpec,beta(i));
-end
-fclose(fileID);
 %% Write histogram to file
 load('cell_features.mat');
 fileID = fopen('histogram_parsed.txt','w');

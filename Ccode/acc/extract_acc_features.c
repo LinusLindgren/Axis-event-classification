@@ -11,8 +11,11 @@
 #include <stdlib.h>
 #include <event2.h>
 #include <syslog.h>
+
 #define AUTO_LAG 30
-#define NBR_FEATURES 9
+#define NBR_FEATURES 22
+#define XCF_XZ_MEAN 606458496
+#define XCF_XZ_STD 1736400000
 
 
 static double calc_mean(double* sample,int sample_size)
@@ -182,7 +185,7 @@ the max of the absolute value crosscorrelation between X & Z, the max of the abs
 
 
 // Extracts the accelerometer features from a sample. The number of features are stated in NBR_FEATURES.
-double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sample_size)
+double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sample_size,svm_linear_model_data_type* svm_model)
 {
 
 	clock_t t1, t2;
@@ -213,13 +216,13 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
     	syslog (LOG_INFO, "acf: %f",diff); 
 	
 	t1 = clock(); 
-	double xcf_xy[2*sample_size-1];
+	//double xcf_xy[2*sample_size-1];
 	double xcf_xz[2*sample_size-1];
-	double xcf_yz[2*sample_size-1];
+	//double xcf_yz[2*sample_size-1];
 	//cross correlation for every dimension pair
-	calc_xcf(sampleX,sampleY,sample_size,sqrt(varianceX),sqrt(varianceY),xcf_xy);	
+	//calc_xcf(sampleX,sampleY,sample_size,sqrt(varianceX),sqrt(varianceY),xcf_xy);	
 	calc_xcf(sampleX,sampleZ,sample_size,sqrt(varianceX),sqrt(varianceZ),xcf_xz);	
-	calc_xcf(sampleY,sampleZ,sample_size,sqrt(varianceY),sqrt(varianceZ),xcf_yz);	
+	//calc_xcf(sampleY,sampleZ,sample_size,sqrt(varianceY),sqrt(varianceZ),xcf_yz);	
 	t2 = clock(); 
 	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
     	syslog (LOG_INFO, "xcf: %f",diff); 
@@ -235,26 +238,61 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	double acf_z_sum = calc_sum(acf_z,AUTO_LAG+1);
 
 	//xcf features max(abs(xcf) for every dimension pair
-	double xcf_xy_max = calc_max(xcf_xy,sample_size*2-1);
+	//double xcf_xy_max = calc_max(xcf_xy,sample_size*2-1);
 	double xcf_xz_max = calc_max(xcf_xz,sample_size*2-1);
-	double xcf_yz_max = calc_max(xcf_yz,sample_size*2-1);
+	//double xcf_yz_max = calc_max(xcf_yz,sample_size*2-1);
 	
 	//normalize using the 2-norm
-	double norm = sqrt(pow(xcf_xy_max,2) + pow(xcf_xz_max,2) + pow(xcf_yz_max,2));
-	xcf_xy_max = xcf_xy_max / norm;
-	xcf_xz_max = xcf_xz_max / norm;
-	xcf_yz_max = xcf_yz_max / norm;
+	//double norm = sqrt(pow(xcf_xy_max,2) + pow(xcf_xz_max,2) + pow(xcf_yz_max,2));
+	//hur normalisera?
+	//double norm = sqrt(pow(xcf_xz_max,2));
+	//xcf_xy_max = xcf_xy_max / norm;
+
+
+	
+	//xcf_xz_max = (xcf_xz_max - XCF_XZ_MEAN)/ XCF_XZ_STD;
+	//xcf_yz_max = xcf_yz_max / norm;
 
 	//add the features in the predefined order
-	features[0] = acf_x_sum;
+	
+	//enter acf sum features
+	features[0] = acf_x_sum ;
 	features[1] = acf_y_sum;
 	features[2] = acf_z_sum;
+	//enter acf min features
 	features[3] = acf_x_min;
 	features[4] = acf_y_min;
 	features[5] = acf_z_min;
-	features[6] = xcf_xy_max;
-	features[7] = xcf_xz_max;
-	features[8] = xcf_yz_max;
+	//enter cross corr features
+	//features[6] = xcf_xy_max;
+	features[6] = xcf_xz_max;
+	//features[8] = xcf_yz_max;
+	//enter mean features
+	features[7] = meanX;
+	features[8] = meanY;
+	features[9] = meanZ;
+	//enter std features
+	features[10] = sqrt(varianceX);
+	features[11] = sqrt(varianceY);
+	features[12] = sqrt(varianceZ);
+	//enter sum features
+	features[13] = calc_sum(sampleX,sample_size);
+	features[14] = calc_sum(sampleY,sample_size);
+	features[15] = calc_sum(sampleZ,sample_size);
+	//enter min features
+	features[16] = calc_min(sampleX,sample_size);
+	features[17] = calc_min(sampleY,sample_size);
+	features[18] = calc_min(sampleZ,sample_size);
+	//enter max features
+	features[19] = calc_max(sampleX,sample_size);
+	features[20] = calc_max(sampleY,sample_size);
+	features[21] = calc_max(sampleZ,sample_size);
+	int i;
+	for(i = 0; i< NBR_FEATURES ; i++)
+	{
+		features[i] = (features[i]-svm_model->features_mean[i]) / svm_model->features_std[i];
+		//syslog (LOG_INFO, "feature[%d]: %f",i,features[i]); 
+	}
 
 
 	//free(acf_x);

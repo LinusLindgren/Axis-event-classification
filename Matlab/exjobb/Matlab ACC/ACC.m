@@ -140,25 +140,27 @@ der_sum_auto_corr = squeeze(sum(derivate_auto_corr,1));
 
 %% perform training and testing
 clc
+write_svm_model_to_file = 1;
 attempts = 1000;
 alpha = 0.75;
+
 
 [averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel] ...
 = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max,auto_corr_flat ...
 ,auto_bins,meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures, ...
 maxTiltFeatures,minTiltFeatures, skewness_samples, kurtosis_samples, sum_changes, mean_changes, ...
 der_min, der_max, der_mean, der_sum ,sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor_samples, kurtosis_acor_samples, ...
-sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr);
+sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file);
+
 %% plot train and testing ratio over alpha
 max_alpha = 1.00;
 min_alpha = 0.05;
-
-
-
-[training_precision, testing_precision] = plot_ratio_over_alpha(min_alpha, max_alpha, attempts, cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat, nposfiles, nnegfiles);
+write_svm_model_to_file = 0;
+[training_precision, testing_precision] = plot_ratio_over_alpha(min_alpha, max_alpha, attempts, cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat, nposfiles, nnegfiles, write_svm_model_to_file);
 
 %% Plot decrease
 max_samples = 256;
 min_samples = 64;
 nbr_steps = 32;
-[max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha);
+write_svm_model_to_file = 0;
+[max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file);

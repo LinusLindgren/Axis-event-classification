@@ -26,13 +26,13 @@
 #endif
 /****************** CONSTANT AND MACRO SECTION ******************************/
 #define TAMPER_GRACE_PERIOD 200 //milliseconds times UPDATE_INTERVAL_SLOW_IN_MSEC
-#define UPDATE_INTERVAL_IN_MSEC (5)
+#define UPDATE_INTERVAL_IN_MSEC (2.5)
 
 #define ILLEGAL_LATERAL_VALUE -91
 #define ILLEGAL_LONGITUDINAL_VALUE -181
 #define MOVING_AVERAGE_FILTER_LEN 10
-#define NUM_WINDOWS 2
-#define WINDOW_LEN 128
+#define NUM_WINDOWS 1
+#define WINDOW_LEN 512
 #define SAMPLES_TO_COLLECT (WINDOW_LEN*NUM_WINDOWS)
 #define NUM_PEAKS 5
 #define NUM_MAIN_PEAKS 2
@@ -45,9 +45,10 @@
 #define ENERGY_NEGATIVE_THRESHOLD 0.25f
 #define POWER_RATIO_THRESHOLD 0.80f
 #define PEAK_RATIO_THRESHOLD 1.25f
-#define NOISE_FILTER_OBSERVATION_COUNT 5
-#define NOISE_FILTER_PASS_COUNT 3
-#define UPDATE_INTERVAL_SLOW_IN_MSEC UPDATE_INTERVAL_IN_MSEC*5
+#define NOISE_FILTER_OBSERVATION_COUNT 10 //Has been doubled due to the sampling frequency being doubled
+#define NOISE_FILTER_PASS_COUNT 6//Has been doubled due to the sampling frequency being doubled
+//#define UPDATE_INTERVAL_SLOW_IN_MSEC UPDATE_INTERVAL_IN_MSEC*5
+#define UPDATE_INTERVAL_SLOW_IN_MSEC 25
 
 //#define force_test
 //insert values manually below, e.g. cat data.txt | xargs echo | tr " " ", "
@@ -981,7 +982,7 @@ save_sample(gint sample)
     if (tilt_user_data->observation_count == NOISE_FILTER_OBSERVATION_COUNT) {
       tilt_user_data->observing = FALSE;
       if (tilt_user_data->pass_count < NOISE_FILTER_PASS_COUNT) {
-        DBG(syslog (LOG_INFO, "Ignoring noise below threshold"));
+        //DBG(syslog (LOG_INFO, "Ignoring noise below threshold"));
         reset_data_recording();
       }
     }
@@ -1099,7 +1100,7 @@ collect_samples(G_GNUC_UNUSED gpointer data)
     }
   } else {
     if (abs(tilt) >= tilt_detection_get_trigger_angle()) {
-      DBG(syslog (LOG_INFO, "Detected tilt above threshold, starting sampling"));
+      //DBG(syslog (LOG_INFO, "Detected tilt above threshold, starting sampling"));
       //start_record_samples(tilt);
       start_record_samples(pos_lib_get_accelerometer_raw_data());
       ret = FALSE;
@@ -1118,7 +1119,7 @@ collect_samples(G_GNUC_UNUSED gpointer data)
      tilt_user_data->sample_speed_fast == TRUE) {
     ret = FALSE;
     tilt_user_data->sample_speed_fast = FALSE;
-    DBG(syslog (LOG_INFO, "Going back to slow sampling"));
+    //DBG(syslog (LOG_INFO, "Going back to slow sampling"));
     g_timeout_add (UPDATE_INTERVAL_SLOW_IN_MSEC, collect_samples, NULL);
   }
   return ret;
@@ -1148,13 +1149,15 @@ static void* save_samples_to_file(gpointer thread_data){
 	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
 	free(data);
 	DBG(syslog (LOG_INFO, "Data has been saved"));
-	//exit(0);
+	exit(0);
 	return NULL;
 }
 
 
 
 static void* classify_tampering(gpointer thread_data){
+	clock_t t1, t2;
+	 
 	DBG(syslog (LOG_INFO, "Starting tampering classification"));
 	
 	
@@ -1163,23 +1166,21 @@ static void* classify_tampering(gpointer thread_data){
 	
 	//gint *samples = data->collected_samples;
 	device_sample** samples = data->collected_samples;
-	
-/*
+	int i;
+	/*
 	//temp for debug, store sample for comparison in matlab
 	char bufferRaw[32]; // The filename buffer.
     	// Put "file" then k then ".txt" in to filename.
     	snprintf(bufferRaw, sizeof(char) * 32, "acc_sample%i", (int)time(NULL));
 	FILE* filename = g_fopen (bufferRaw,"w");
 	g_fprintf(filename,"startup(x,y,z):(%d,%d,%d)\n",data->acc_x_at_startup, data->acc_y_at_startup, data->acc_z_at_startup);
-	int i;
 	for(i=0;i<SAMPLES_TO_COLLECT; i++){
 		g_fprintf(filename,"%d %d %d\n",samples[i]->x, samples[i]->y,samples[i]->z);
 	
 	}
 	fclose(filename);
-*/
+	*/
 	//onödigt ? kolla senare
-	int i;
 	double* sample_z = malloc(sizeof(double)*SAMPLES_TO_COLLECT);
 	double* sample_x = malloc(sizeof(double)*SAMPLES_TO_COLLECT);
 	double* sample_y = malloc(sizeof(double)*SAMPLES_TO_COLLECT);	
@@ -1188,24 +1189,25 @@ static void* classify_tampering(gpointer thread_data){
 		sample_x[i]=samples[i]->x - data->acc_x_at_startup;
 		sample_y[i]=samples[i]->y - data->acc_y_at_startup;
 	}
-	
-	t1 = clock(); 
-	double* features = extract_features(sample_x,sample_y,sample_z,SAMPLES_TO_COLLECT);
-	t2 = clock(); 
+	t1 = clock();
+	double* features = extract_features(sample_x,sample_y,sample_z,SAMPLES_TO_COLLECT,svm_model);
+	 t2 = clock(); 
 	float diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
-    	DBG(syslog (LOG_INFO, "tampering classifying time: %f",diff)); 
+    	DBG(syslog (LOG_INFO, "tampering classifying time: %f",diff));
 
 	double score = predict(features,svm_model,get_nbr_features());
 	
 	if(score > 0)
 	{
 		DBG(syslog (LOG_INFO, "tampering with score %f\n",score));
-		tilt_trigger_tampering();
+		//tilt_trigger_tampering();
 	}else
 	{
 		DBG(syslog (LOG_INFO, "not tampering with score %f\n",score));
 	}
 	//free all	
+	
+
 	free(features);
 	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
 	free(data);
@@ -1564,8 +1566,8 @@ gboolean detect_dominant_peaks(float *spectrum, int size, peak_data_t * peaks, i
       indices[i] = FALSE;
     }
 
-    DBG(syslog(LOG_INFO, "detect_dominant peaks[0] value %f index %d (%d Hz)", peaks[0].peak_value, peaks[0].peak_index, ((peaks[0].peak_index-1)*(1000/UPDATE_INTERVAL_IN_MSEC)/WINDOW_LEN)));
-    DBG(syslog(LOG_INFO, "detect_dominant peaks[1] value %f index %d (%d Hz)", peaks[1].peak_value, peaks[1].peak_index, ((peaks[1].peak_index-1)*(1000/UPDATE_INTERVAL_IN_MSEC)/WINDOW_LEN)));
+    //DBG(syslog(LOG_INFO, "detect_dominant peaks[0] value %f index %d (%d Hz)", peaks[0].peak_value, peaks[0].peak_index, ((peaks[0].peak_index-1)*(1000/UPDATE_INTERVAL_IN_MSEC)/WINDOW_LEN)));
+    //DBG(syslog(LOG_INFO, "detect_dominant peaks[1] value %f index %d (%d Hz)", peaks[1].peak_value, peaks[1].peak_index, ((peaks[1].peak_index-1)*(1000/UPDATE_INTERVAL_IN_MSEC)/WINDOW_LEN)));
     // Calculate the total power (only half of the spectrum is considered)
     for (i = 0; i < size; i++) {
       total_power += spectrum[i];
@@ -1913,6 +1915,8 @@ tilt_detection_finalize(void)
   if(svm_model != NULL)
   {
     g_free(svm_model->beta);
+    g_free(svm_model->features_mean);
+    g_free(svm_model->features_std);	
     g_free(svm_model);
   }
 }

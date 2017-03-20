@@ -1,7 +1,7 @@
 function [averageTestRatio, averageTrainRatio, true_positive_ratio, false_positive_ratio, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles, nnegfiles, sum_auto, min_auto, cross_corr_max, auto_corr_flat, auto_bins, ...
     meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures,maxTiltFeatures,minTiltFeatures, skewness, kurtosis, sum_changes, mean_changes, ...
     der_min, der_max, der_mean, der_sum, sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor, kurtosis_acor, ...
-    sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr)
+    sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 sumOfRatios_test = 0;
@@ -79,7 +79,9 @@ failingIndexes = testIndex(result(:,1) == 0);
 countMissclassifications(failingIndexes,1) = countMissclassifications(failingIndexes,1) + 1;
 
 end
-
+if(write_svm_model_to_file)
+    write_svm_model(SVMModel,mean_train, std_train);
+end
 averageTestRatio = sumOfRatios_test/attempts;
 averageTrainRatio = sumOfRatios_train/attempts;
 true_positive_ratio = true_positive_sum/attempts;
