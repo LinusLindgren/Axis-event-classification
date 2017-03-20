@@ -1,4 +1,4 @@
-function [cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat] = extract_corr_features(samples,nposfiles,nnegfiles,lag)
+function [cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat, auto_corr] = extract_corr_features(samples,nposfiles,nnegfiles,lag)
 %EXTRACT_CORR_FEATURES Summary of this function goes here
 %   Detailed explanation goes here
 

@@ -20,7 +20,9 @@ samples = cat(3,samples1(:,:,1:nposfiles1), samples2(:,:,1:nposfiles2), samples1
 nposfiles = nposfiles1+nposfiles2;
 nnegfiles = nnegfiles1+nnegfiles2;
 nbrfiles = nposfiles + nnegfiles;
+
 %% compute non-dft values
+
 tiltXZ = calc_tilt(samples(:,3,:),samples(:,1,:),nbrOfSamples);
 tiltYZ = calc_tilt(samples(:,3,:),samples(:,2,:),nbrOfSamples);
 tiltXY = calc_tilt(samples(:,2,:),samples(:,1,:),nbrOfSamples);
@@ -34,10 +36,36 @@ meanTiltFeatures = [mean(tiltXY,1); mean(tiltXZ,1) ;mean(tiltYZ,1)];
 stdFeatures =  squeeze(std(samples,0,1));
 stdTiltFeatures =  [std(tiltXY,0,1); std(tiltXZ,0,1) ;std(tiltYZ,0,1)];
 sumFeatures = squeeze(sum(samples,1));
+sumAbsFeatures = squeeze(sum(abs(samples),1));
+sumAllDimFeatures = squeeze(sum(sumAbsFeatures,1));
 maxFeatures = squeeze(max(samples,[],1));
 minFeatures = squeeze(min(samples,[],1));
 maxTiltFeatures = [max(tiltXY,[],1); max(tiltXZ,[],1) ;max(tiltYZ,[],1)];
 minTiltFeatures = [min(tiltXY,[],1); min(tiltXZ,[],1) ;min(tiltYZ,[],1)];
+
+skewness_samples = squeeze(skewness(samples))';
+kurtosis_samples = squeeze(kurtosis(samples))';
+
+sum_changes = zeros(3,nbrfiles);
+mean_changes = zeros(3,nbrfiles);
+for i = 1: nbrfiles
+   for j = 1 : nbrOfSamples -1
+       sum_changes(1,i) = sum_changes(1,i) + abs(samples(j+1,1,i) -samples(j,1,i));
+       sum_changes(2,i) = sum_changes(2,i) + abs(samples(j+1,2,i) -samples(j,2,i));
+       sum_changes(3,i) = sum_changes(3,i) + abs(samples(j+1,3,i) -samples(j,3,i));
+   end
+   mean_changes(1,i) = sum_changes(1,i)/(nbrOfSamples-1);
+   mean_changes(2,i) = sum_changes(2,i)/(nbrOfSamples-1);
+   mean_changes(3,i) = sum_changes(3,i)/(nbrOfSamples-1);
+end
+
+derivate = diff(samples);
+der_mean = squeeze(mean(derivate,1));
+der_max = squeeze(max(derivate,[],1));
+der_min = squeeze(min(derivate,[],1));
+der_sum = squeeze(sum(derivate,1));
+moments = squeeze(moment(samples,3));
+
 %% compute dft values
 close all;
 dft_samples = calc_dft(samples,nposfiles,nnegfiles,nbrOfSamples);
@@ -86,14 +114,41 @@ end
 %% Extract correlation features
 
 lag = 30;
-[cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat] = extract_corr_features(samples,nposfiles,nnegfiles,lag);
+[cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat, auto_corr] = extract_corr_features(samples,nposfiles,nnegfiles,lag);
+skewness_acor_samples = squeeze(skewness(auto_corr))';
+kurtosis_acor_samples = squeeze(kurtosis(auto_corr))';
+
+sum_changes_auto = zeros(3,nbrfiles);
+mean_changes_auto = zeros(3,nbrfiles);
+for i = 1: nbrfiles
+   for j = 1 : lag
+       sum_changes_auto(1,i) = sum_changes_auto(1,i) + abs(auto_corr(j+1,1,i) -auto_corr(j,1,i));
+       sum_changes_auto(2,i) = sum_changes_auto(2,i) + abs(auto_corr(j+1,2,i) -auto_corr(j,2,i));
+       sum_changes_auto(3,i) = sum_changes_auto(3,i) + abs(auto_corr(j+1,3,i) -auto_corr(j,3,i));
+   end
+   mean_changes_auto(1,i) = sum_changes_auto(1,i)/(lag);
+   mean_changes_auto(2,i) = sum_changes_auto(2,i)/(lag);
+   mean_changes_auto(3,i) = sum_changes_auto(3,i)/(lag);
+end
+
+derivate_auto_corr = diff(auto_corr);
+der_mean_auto_corr = squeeze(mean(derivate_auto_corr,1));
+der_max_auto_corr = squeeze(max(derivate_auto_corr,[],1));
+der_min_auto_corr = squeeze(min(derivate_auto_corr,[],1));
+der_sum_auto_corr = squeeze(sum(derivate_auto_corr,1));
+
 
 %% perform training and testing
 clc
 attempts = 1000;
 alpha = 0.75;
 
-[~, average_ratio, true_positive, false_positive, countMissclassifications,SVMModel] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max,auto_corr_flat ,auto_bins,meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures,maxTiltFeatures,minTiltFeatures);
+[averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel] ...
+= train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max,auto_corr_flat ...
+,auto_bins,meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures, ...
+maxTiltFeatures,minTiltFeatures, skewness_samples, kurtosis_samples, sum_changes, mean_changes, ...
+der_min, der_max, der_mean, der_sum ,sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor_samples, kurtosis_acor_samples, ...
+sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr);
 %% plot train and testing ratio over alpha
 max_alpha = 1.00;
 min_alpha = 0.05;
