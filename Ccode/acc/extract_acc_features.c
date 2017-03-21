@@ -13,10 +13,34 @@
 #include <syslog.h>
 
 #define AUTO_LAG 30
-#define NBR_FEATURES 22
-#define XCF_XZ_MEAN 606458496
-#define XCF_XZ_STD 1736400000
+#define NBR_FEATURES 34
 
+
+static double calc_sum_changes(double* sample, int sample_size)
+{
+	int i;	
+	double sum = 0;
+	for(i = 1; i < sample_size; i++)
+	{
+		sum += abs(sample[i]-sample[i-1]);
+	}
+	return sum;
+}
+
+//E(X-mean)^k /std^k where k = 3 -> skewness and k = 4 -> kurtosis
+static double calc_normalized_moment(double* sample, int sample_size,double mean, double std, int k)
+{
+	//calc E(X-mean)
+	int i;	
+	double sum = 0;
+	for(i = 0; i < sample_size; i++)
+	{
+		sum += sample[i] - mean; 
+	}
+	sum /= sample_size;
+	//return E(X-mean)^k /std^k
+	return pow(sum,k) / pow(std,k);
+}
 
 static double calc_mean(double* sample,int sample_size)
 {
@@ -237,6 +261,16 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	double acf_y_sum = calc_sum(acf_y,AUTO_LAG+1);
 	double acf_z_sum = calc_sum(acf_z,AUTO_LAG+1);
 
+
+	//mean and variance for acor,used for skewness and kurtosis
+	double acor_meanX = calc_mean(acf_x,AUTO_LAG+1);
+	double acor_meanY = calc_mean(acf_y,AUTO_LAG+1);
+	double acor_meanZ = calc_mean(acf_z,AUTO_LAG+1);
+
+	double acor_varianceX = calc_variance(acf_x,AUTO_LAG+1,acor_meanX);
+	double acor_varianceY = calc_variance(acf_y,AUTO_LAG+1,acor_meanY);
+	double acor_varianceZ = calc_variance(acf_z,AUTO_LAG+1,acor_meanZ);
+
 	//xcf features max(abs(xcf) for every dimension pair
 	//double xcf_xy_max = calc_max(xcf_xy,sample_size*2-1);
 	double xcf_xz_max = calc_max(xcf_xz,sample_size*2-1);
@@ -252,6 +286,7 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	
 	//xcf_xz_max = (xcf_xz_max - XCF_XZ_MEAN)/ XCF_XZ_STD;
 	//xcf_yz_max = xcf_yz_max / norm;
+
 
 	//add the features in the predefined order
 	
@@ -271,27 +306,44 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	features[7] = meanX;
 	features[8] = meanY;
 	features[9] = meanZ;
-	//enter std features
-	features[10] = sqrt(varianceX);
-	features[11] = sqrt(varianceY);
-	features[12] = sqrt(varianceZ);
-	//enter sum features
-	features[13] = calc_sum(sampleX,sample_size);
-	features[14] = calc_sum(sampleY,sample_size);
-	features[15] = calc_sum(sampleZ,sample_size);
 	//enter min features
-	features[16] = calc_min(sampleX,sample_size);
-	features[17] = calc_min(sampleY,sample_size);
-	features[18] = calc_min(sampleZ,sample_size);
+	features[10] = calc_min(sampleX,sample_size);
+	features[11] = calc_min(sampleY,sample_size);
+	features[12] = calc_min(sampleZ,sample_size);
 	//enter max features
-	features[19] = calc_max(sampleX,sample_size);
-	features[20] = calc_max(sampleY,sample_size);
-	features[21] = calc_max(sampleZ,sample_size);
+	features[13] = calc_max(sampleX,sample_size);
+	features[14] = calc_max(sampleY,sample_size);
+	features[15] = calc_max(sampleZ,sample_size);
+	//möjlighet att optimera, dumt att beräka moment flera gånger, men bör vara marginell skillnad
+	//enter kurtosis for raw data
+	features[16] = calc_normalized_moment(sampleX,sample_size,meanX,sqrt(varianceX),4);
+	features[17] = calc_normalized_moment(sampleY,sample_size,meanY,sqrt(varianceY),4);
+	features[18] = calc_normalized_moment(sampleZ,sample_size,meanZ,sqrt(varianceZ),4);
+	//enter skewness for raw data
+	features[19] = calc_normalized_moment(sampleX,sample_size,meanX,sqrt(varianceX),3);
+	features[20] = calc_normalized_moment(sampleY,sample_size,meanY,sqrt(varianceY),3);
+	features[21] = calc_normalized_moment(sampleZ,sample_size,meanZ,sqrt(varianceZ),3);
+	//enter kurtosis for acor data
+	features[22] = calc_normalized_moment(acf_x,AUTO_LAG+1,acor_meanX,sqrt(acor_varianceX),4);
+	features[23] = calc_normalized_moment(acf_y,AUTO_LAG+1,acor_meanY,sqrt(acor_varianceY),4);
+	features[24] = calc_normalized_moment(acf_z,AUTO_LAG+1,acor_meanZ,sqrt(acor_varianceZ),4);
+	//enter skewness for acor data
+	features[25] = calc_normalized_moment(acf_x,AUTO_LAG+1,acor_meanX,sqrt(acor_varianceX),3);
+	features[26] = calc_normalized_moment(acf_y,AUTO_LAG+1,acor_meanY,sqrt(acor_varianceY),3);
+	features[27] = calc_normalized_moment(acf_z,AUTO_LAG+1,acor_meanZ,sqrt(acor_varianceZ),3);
+	//enter sum changes
+	features[28] = calc_sum_changes(sampleX,sample_size);
+	features[29] = calc_sum_changes(sampleY,sample_size);
+	features[30] = calc_sum_changes(sampleZ,sample_size);
+	// enter sum changes mean, probably dumb, remove later
+	features[31] = features[28]/(sample_size-1);
+	features[32] = features[29]/(sample_size-1);
+	features[33] = features[30]/(sample_size-1);
 	int i;
 	for(i = 0; i< NBR_FEATURES ; i++)
 	{
 		features[i] = (features[i]-svm_model->features_mean[i]) / svm_model->features_std[i];
-		//syslog (LOG_INFO, "feature[%d]: %f",i,features[i]); 
+		syslog (LOG_INFO, "feature[%d]: %f",i,features[i]); 
 	}
 
 
