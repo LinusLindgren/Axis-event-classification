@@ -26,13 +26,13 @@
 #endif
 /****************** CONSTANT AND MACRO SECTION ******************************/
 #define TAMPER_GRACE_PERIOD 200 //milliseconds times UPDATE_INTERVAL_SLOW_IN_MSEC
-#define UPDATE_INTERVAL_IN_MSEC (2.5)
+#define UPDATE_INTERVAL_IN_MSEC (5)
 
 #define ILLEGAL_LATERAL_VALUE -91
 #define ILLEGAL_LONGITUDINAL_VALUE -181
 #define MOVING_AVERAGE_FILTER_LEN 10
 #define NUM_WINDOWS 1
-#define WINDOW_LEN 512
+#define WINDOW_LEN 256
 #define SAMPLES_TO_COLLECT (WINDOW_LEN*NUM_WINDOWS)
 #define NUM_PEAKS 5
 #define NUM_MAIN_PEAKS 2
@@ -45,10 +45,9 @@
 #define ENERGY_NEGATIVE_THRESHOLD 0.25f
 #define POWER_RATIO_THRESHOLD 0.80f
 #define PEAK_RATIO_THRESHOLD 1.25f
-#define NOISE_FILTER_OBSERVATION_COUNT 10 //Has been doubled due to the sampling frequency being doubled
-#define NOISE_FILTER_PASS_COUNT 6//Has been doubled due to the sampling frequency being doubled
-//#define UPDATE_INTERVAL_SLOW_IN_MSEC UPDATE_INTERVAL_IN_MSEC*5
-#define UPDATE_INTERVAL_SLOW_IN_MSEC 25
+#define NOISE_FILTER_OBSERVATION_COUNT 5 
+#define NOISE_FILTER_PASS_COUNT 3
+#define UPDATE_INTERVAL_SLOW_IN_MSEC UPDATE_INTERVAL_IN_MSEC*5
 
 //#define force_test
 //insert values manually below, e.g. cat data.txt | xargs echo | tr " " ", "
@@ -1167,7 +1166,7 @@ static void* classify_tampering(gpointer thread_data){
 	//gint *samples = data->collected_samples;
 	device_sample** samples = data->collected_samples;
 	int i;
-	/*
+	
 	//temp for debug, store sample for comparison in matlab
 	char bufferRaw[32]; // The filename buffer.
     	// Put "file" then k then ".txt" in to filename.
@@ -1179,7 +1178,7 @@ static void* classify_tampering(gpointer thread_data){
 	
 	}
 	fclose(filename);
-	*/
+	
 	//onödigt ? kolla senare
 	double* sample_z = malloc(sizeof(double)*SAMPLES_TO_COLLECT);
 	double* sample_x = malloc(sizeof(double)*SAMPLES_TO_COLLECT);
