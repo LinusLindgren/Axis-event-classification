@@ -27,6 +27,49 @@ static double calc_sum_changes(double* sample, int sample_size)
 	return sum;
 }
 
+
+static double calc_skewness(double* sample, int sample_size,double mean, double variance)
+{
+	int i;	
+	// (1/n) * sum 1->n with (x-mean)^3
+	double nominator = 0;
+	// (  sqrt(  (1/n) * sum 1->n with (x-mean)^2  )  )^2
+	//double denominator = 0;
+	for(i = 0; i < sample_size; i++)
+	{
+		//nominator+= pow(sample[i] - mean,3); 
+		nominator+= (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean); 
+		//denominator+= pow(sample[i] - mean,2); 
+	}
+	nominator /= sample_size;
+	//denominator /= sample_size;
+	//denominator = sqrt(denominator);
+	double denominator = pow(variance,1.5);
+	return nominator / denominator;
+	
+}
+
+static double calc_kurtosis(double* sample, int sample_size, double mean,double variance)
+{
+	
+	int i;	
+	// (1/n) * sum 1->n with (x-mean)^4
+	double nominator = 0;
+	// ((1/n) * sum 1->n with (x-mean)^2)^2
+	//double denominator = 0;
+	for(i = 0; i < sample_size; i++)
+	{
+		//nominator+= pow(sample[i] - mean,4); 
+		nominator+= (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean);
+		//denominator+= pow(sample[i] - mean,2); 
+	}
+	nominator /= sample_size;
+	//denominator /= sample_size;
+	double denominator = pow(variance,2);
+	return nominator / denominator;
+}
+
+/*
 //E(X-mean)^k /std^k where k = 3 -> skewness and k = 4 -> kurtosis
 static double calc_normalized_moment(double* sample, int sample_size,double mean, double std, int k)
 {
@@ -41,6 +84,7 @@ static double calc_normalized_moment(double* sample, int sample_size,double mean
 	//return E(X-mean)^k /std^k
 	return pow(sum,k) / pow(std,k);
 }
+*/
 
 static double calc_mean(double* sample,int sample_size)
 {
@@ -60,6 +104,7 @@ static double calc_variance(double* sample,int sample_size, double sample_mean)
 	for(i = 0; i < sample_size; i++)
 	{	
 		sum += pow(sample[i]-sample_mean,2);
+		//sum += (sample[i]-sample_mean) * (sample[i]-sample_mean)
 		
 	}
 	return sum / sample_size;
@@ -82,10 +127,10 @@ static double calc_min(double* sample, int sample_size)
 static double calc_max(double* sample, int sample_size)
 {
 	int i;
-	double max = -DBL_MAX;
+	double max = DBL_MIN;
 	for(i = 0; i < sample_size; i++)
 	{
-		if(abs(sample[i])>max)
+		if(sample[i] > max)
 		{
 			max = abs(sample[i]);
 		}	
@@ -254,19 +299,27 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	//extract features
 
 	//acf features sum and min for every dimension
+	t1 = clock(); 
 	double acf_x_min = calc_min(acf_x,AUTO_LAG+1);
 	double acf_y_min = calc_min(acf_y,AUTO_LAG+1);
 	double acf_z_min = calc_min(acf_z,AUTO_LAG+1);
 	double acf_x_sum = calc_sum(acf_x,AUTO_LAG+1);
 	double acf_y_sum = calc_sum(acf_y,AUTO_LAG+1);
 	double acf_z_sum = calc_sum(acf_z,AUTO_LAG+1);
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "acf min/sum: %f",diff); 
 
 
 	//mean and variance for acor,used for skewness and kurtosis
+	t1 = clock(); 
 	double acor_meanX = calc_mean(acf_x,AUTO_LAG+1);
 	double acor_meanY = calc_mean(acf_y,AUTO_LAG+1);
 	double acor_meanZ = calc_mean(acf_z,AUTO_LAG+1);
 
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "acf mean: %f",diff); 
 	double acor_varianceX = calc_variance(acf_x,AUTO_LAG+1,acor_meanX);
 	double acor_varianceY = calc_variance(acf_y,AUTO_LAG+1,acor_meanY);
 	double acor_varianceZ = calc_variance(acf_z,AUTO_LAG+1,acor_meanZ);
@@ -291,7 +344,7 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	//add the features in the predefined order
 	
 	//enter acf sum features
-	features[0] = acf_x_sum ;
+	features[0] = acf_x_sum;
 	features[1] = acf_y_sum;
 	features[2] = acf_z_sum;
 	//enter acf min features
@@ -307,6 +360,7 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	features[8] = meanY;
 	features[9] = meanZ;
 	//enter min features
+	t1 = clock(); 
 	features[10] = calc_min(sampleX,sample_size);
 	features[11] = calc_min(sampleY,sample_size);
 	features[12] = calc_min(sampleZ,sample_size);
@@ -314,24 +368,32 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	features[13] = calc_max(sampleX,sample_size);
 	features[14] = calc_max(sampleY,sample_size);
 	features[15] = calc_max(sampleZ,sample_size);
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "min/max raw: %f",diff); 
 	//möjlighet att optimera, dumt att beräka moment flera gånger, men bör vara marginell skillnad
 	//enter kurtosis for raw data
-	features[16] = calc_normalized_moment(sampleX,sample_size,meanX,sqrt(varianceX),4);
-	features[17] = calc_normalized_moment(sampleY,sample_size,meanY,sqrt(varianceY),4);
-	features[18] = calc_normalized_moment(sampleZ,sample_size,meanZ,sqrt(varianceZ),4);
+	t1 = clock(); 
+	features[16] = calc_kurtosis(sampleX,sample_size,meanX,varianceX);
+	features[17] = calc_kurtosis(sampleY,sample_size,meanY,varianceY);
+	features[18] = calc_kurtosis(sampleZ,sample_size,meanZ,varianceZ);
 	//enter skewness for raw data
-	features[19] = calc_normalized_moment(sampleX,sample_size,meanX,sqrt(varianceX),3);
-	features[20] = calc_normalized_moment(sampleY,sample_size,meanY,sqrt(varianceY),3);
-	features[21] = calc_normalized_moment(sampleZ,sample_size,meanZ,sqrt(varianceZ),3);
+	features[19] = calc_skewness(sampleX,sample_size,meanX,varianceX);
+	features[20] = calc_skewness(sampleY,sample_size,meanY,varianceY);
+	features[21] = calc_skewness(sampleZ,sample_size,meanZ,varianceZ);
 	//enter kurtosis for acor data
-	features[22] = calc_normalized_moment(acf_x,AUTO_LAG+1,acor_meanX,sqrt(acor_varianceX),4);
-	features[23] = calc_normalized_moment(acf_y,AUTO_LAG+1,acor_meanY,sqrt(acor_varianceY),4);
-	features[24] = calc_normalized_moment(acf_z,AUTO_LAG+1,acor_meanZ,sqrt(acor_varianceZ),4);
+	features[22] = calc_kurtosis(acf_x,AUTO_LAG+1,acor_meanX,acor_varianceX);
+	features[23] = calc_kurtosis(acf_y,AUTO_LAG+1,acor_meanY,acor_varianceY);
+	features[24] = calc_kurtosis(acf_z,AUTO_LAG+1,acor_meanZ,acor_varianceZ);
 	//enter skewness for acor data
-	features[25] = calc_normalized_moment(acf_x,AUTO_LAG+1,acor_meanX,sqrt(acor_varianceX),3);
-	features[26] = calc_normalized_moment(acf_y,AUTO_LAG+1,acor_meanY,sqrt(acor_varianceY),3);
-	features[27] = calc_normalized_moment(acf_z,AUTO_LAG+1,acor_meanZ,sqrt(acor_varianceZ),3);
+	features[25] = calc_skewness(acf_x,AUTO_LAG+1,acor_meanX,acor_varianceX);
+	features[26] = calc_skewness(acf_y,AUTO_LAG+1,acor_meanY,acor_varianceY);
+	features[27] = calc_skewness(acf_z,AUTO_LAG+1,acor_meanZ,acor_varianceZ);
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "kurtosis/skewness for acf/raw: %f",diff); 
 	//enter sum changes
+	t1 = clock(); 
 	features[28] = calc_sum_changes(sampleX,sample_size);
 	features[29] = calc_sum_changes(sampleY,sample_size);
 	features[30] = calc_sum_changes(sampleZ,sample_size);
@@ -339,11 +401,16 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	features[31] = features[28]/(sample_size-1);
 	features[32] = features[29]/(sample_size-1);
 	features[33] = features[30]/(sample_size-1);
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "sum/mean changes: %f",diff); 
 	int i;
 	for(i = 0; i< NBR_FEATURES ; i++)
 	{
+		//syslog (LOG_INFO, "feature[%d]: %f",i,features[i]);
 		features[i] = (features[i]-svm_model->features_mean[i]) / svm_model->features_std[i];
-		syslog (LOG_INFO, "feature[%d]: %f",i,features[i]); 
+		
+		 
 	}
 
 
