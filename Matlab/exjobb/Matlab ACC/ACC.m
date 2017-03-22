@@ -3,11 +3,11 @@ clear, clc, close all
 %
 nbrOfSamples = 256;
 
-target_freq = 12.5;
+target_freq = 200;
 [nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'acc_data\postemp\acc*' ...
 , 'acc_data\negtemp\acc*');
-
 [samples1, ~] = convert_freq(samples1,200,target_freq);
+
 %nposfiles1=0;
 %nnegfiles1=0;
 
@@ -119,7 +119,7 @@ end
 
 %% Extract correlation features
 
-lag = 7;
+lag = 30;
 [cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat, auto_corr] = extract_corr_features(samples,nposfiles,nnegfiles,lag);
 skewness_acor_samples = squeeze(skewness(auto_corr))';
 kurtosis_acor_samples = squeeze(kurtosis(auto_corr))';
@@ -151,14 +151,18 @@ attempts = 1000;
 alpha = 0.75;
 
 
-[averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel] ...
+[averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector] ...
 = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max,auto_corr_flat ...
 ,auto_bins,meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures, ...
 maxTiltFeatures,minTiltFeatures, skewness_samples, kurtosis_samples, sum_changes, mean_changes, ...
 der_min, der_max, der_mean, der_sum ,sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor_samples, kurtosis_acor_samples, ...
 sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file);
 %% plot feature clustering
-plot_feature_clustering(sum_changes(2,:), min_auto(:,3)',nposfiles,nnegfiles);
+
+[sortedBeta,sortingIndices] = sort(abs(SVMModel.Beta),'descend');
+
+%plot_feature_clustering_2D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',nposfiles,nnegfiles);
+plot_feature_clustering_3D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',featureVector(:,sortingIndices(3))',nposfiles,nnegfiles);
 
 
 %% plot train and testing ratio over alpha
@@ -173,3 +177,4 @@ min_samples = 64;
 nbr_steps = 32;
 write_svm_model_to_file = 0;
 [max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file);
+
