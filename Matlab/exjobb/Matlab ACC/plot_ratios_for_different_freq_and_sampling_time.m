@@ -1,4 +1,4 @@
-%% read samples
+
 clear, clc, close all
 
 res = zeros(6, 5);
@@ -134,9 +134,16 @@ sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_m
 end
 %% plot 
 close all
+xq = 12.5:12.5:200;
+x = [200,100,50,25,12.5];
+
+
+
 %128 = 1.28, it is the time of the sampling
-ft_128 = fit(x',res(1,:)','smoothingspline');
-ff_128 = fit(x',res(2,:)','smoothingspline');
+vq128ft = interp1(x',res(1,:)',xq);
+vq128ff = interp1(x',res(2,:)',xq);
+ft_128 = fit(xq',vq128ft','smoothingspline');
+ff_128 = fit(xq',vq128ff','smoothingspline');
 figure
 plot(ft_128,'b',x',res(1,:)','.b');
 hold on
@@ -144,8 +151,11 @@ plot(ff_128,'r',x',res(2,:)','.r');
 title('Ratio for 1.28 (s) sampling time for different frequencies');
 legend('Data true positive','true positive','data false positive', 'false positive');
 
-ft_64 = fit(x',res(3,:)','smoothingspline');
-ff_64 = fit(x',res(4,:)','smoothingspline');
+
+vq64ft = interp1(x',res(3,:)',xq);
+vq64ff = interp1(x',res(4,:)',xq);
+ft_64 = fit(xq',vq64ft','smoothingspline');
+ff_64 = fit(xq',vq64ff','smoothingspline');
 figure
 plot(ft_64,'b',x',res(3,:)','.b');
 hold on
@@ -153,8 +163,10 @@ plot(ff_64,'r',x',res(4,:)','.r');
 title('Ratio for 0.64 (s) sampling time for different frequencies');
 legend('Data true positive','true positive','data false positive', 'false positive');
 
-ft_32 = fit(x',res(5,:)','smoothingspline');
-ff_32 = fit(x',res(6,:)','smoothingspline');
+vq32ft = interp1(x',res(5,:)',xq);
+vq32ff = interp1(x',res(6,:)',xq);
+ft_32 = fit(xq',vq32ft','smoothingspline');
+ff_32 = fit(xq',vq32ff','smoothingspline');
 figure
 plot(ft_32,'b',x',res(5,:)','.b');
 hold on
