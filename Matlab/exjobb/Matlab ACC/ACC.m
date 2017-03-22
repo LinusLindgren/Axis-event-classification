@@ -6,7 +6,7 @@ freq_after = 200;
 [nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'acc_data\postemp\acc*' ...
 , 'acc_data\negtemp\acc*');
 
-%[samples1, ~] = convert_freq(samples1,200,100);
+%[samples1, ~] = convert_freq(samples1,freq_before/2,freq_after);
 %nposfiles1=0;
 %nnegfiles1=0;
 
@@ -147,14 +147,18 @@ attempts = 1000;
 alpha = 0.75;
 
 
-[averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel] ...
+[averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector] ...
 = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max,auto_corr_flat ...
 ,auto_bins,meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures, ...
 maxTiltFeatures,minTiltFeatures, skewness_samples, kurtosis_samples, sum_changes, mean_changes, ...
 der_min, der_max, der_mean, der_sum ,sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor_samples, kurtosis_acor_samples, ...
 sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file);
 %% plot feature clustering
-plot_feature_clustering(sum_changes(2,:), min_auto(:,3)',nposfiles,nnegfiles);
+
+[sortedBeta,sortingIndices] = sort(abs(SVMModel.Beta),'descend');
+
+%plot_feature_clustering_2D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',nposfiles,nnegfiles);
+plot_feature_clustering_3D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',featureVector(:,sortingIndices(3))',nposfiles,nnegfiles);
 
 
 %% plot train and testing ratio over alpha
@@ -169,3 +173,4 @@ min_samples = 64;
 nbr_steps = 32;
 write_svm_model_to_file = 0;
 [max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file);
+
