@@ -160,7 +160,7 @@ sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_m
 %% plot feature clustering
 
 [sortedBeta,sortingIndices] = sort(abs(SVMModel.Beta),'descend');
-plot_feature_clustering_1D(featureVector(:,sortingIndices(1))', nposfiles,nnegfiles);
+plot_feature_clustering_1Dx3(featureVector(:,1)',featureVector(:,2)',featureVector(:,3)', nposfiles,nnegfiles);
 %plot_feature_clustering_2D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',nposfiles,nnegfiles);
 %plot_feature_clustering_3D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',featureVector(:,sortingIndices(3))',nposfiles,nnegfiles);
 

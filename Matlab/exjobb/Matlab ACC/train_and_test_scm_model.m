@@ -27,18 +27,22 @@ featureVector = [sum_auto min_auto cross_corr_max(2,:)' meanFeatures' ...
 maxFeatures' kurtosis_vec skewness_vec kurtosis_acor skewness_acor ...
 sum_changes' mean_changes'];
 
+mean_features = mean(featureVector);
+std_features = std(featureVector);
+featureVector= featureVector - repmat(mean_features,size(featureVector,1),1);
+featureVector = featureVector ./ repmat(std_features,size(featureVector,1),1);
 
 trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' meanFeatures(:,trainIndex)' ...
  minFeatures(:,trainIndex)' ...
-maxFeatures(:,trainIndex)' kurtosis_vec(trainIndex,:) skewness_vec(trainIndex,:) kurtosis_acor(trainIndex,:) skewness_acor(trainIndex,:) ...
-sum_changes(:,trainIndex)' mean_changes(:,trainIndex)' ];
+maxFeatures(:,trainIndex)'  skewness_vec(trainIndex,:) kurtosis_acor(trainIndex,:) skewness_acor(trainIndex,:) ...
+sum_changes(:,trainIndex)'  ];
 %trainObservations = [ sum_changes(2,trainIndex)'  min_auto(trainIndex,3)];
 %trainObservations = ONES(2,trainIndex)';
 trainLabels = label(trainIndex);
 %testobservations = ONES(2,testIndex)';
 testobservations = [sum_auto(testIndex,:) min_auto(testIndex,:) cross_corr_max(2,testIndex)' meanFeatures(:,testIndex)' ... 
- minFeatures(:,testIndex)' maxFeatures(:,testIndex)' kurtosis_vec(testIndex,:) skewness_vec(testIndex,:) kurtosis_acor(testIndex,:) skewness_acor(testIndex,:) ...
- sum_changes(:,testIndex)' mean_changes(:,testIndex)'];
+ minFeatures(:,testIndex)' maxFeatures(:,testIndex)'  skewness_vec(testIndex,:) kurtosis_acor(testIndex,:) skewness_acor(testIndex,:) ...
+ sum_changes(:,testIndex)' ];
 %testobservations = [ sum_changes(2,testIndex)'  min_auto(testIndex,3)];
 mean_train = mean(trainObservations);
 std_train = std(trainObservations);
@@ -52,6 +56,7 @@ trainObservations= trainObservations - repmat(mean_train,size(trainObservations,
 testobservations = testobservations - repmat(mean_train,size(testobservations,1),1);
 trainObservations = trainObservations ./ repmat(std_train,size(trainObservations,1),1);
 testobservations = testobservations ./ repmat(std_train,size(testobservations,1),1);
+
 
 %trainObservations(:,1:3) = trainObservations(:,1:3) - repmat(mean_train(1,1:3),size(trainObservations,1),1);
 %testobservations(:,1:3) = testobservations(:,1:3) - repmat(mean_train(1,1:3),size(testobservations,1),1);
