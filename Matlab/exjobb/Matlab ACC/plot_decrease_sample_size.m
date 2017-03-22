@@ -1,12 +1,9 @@
 function [max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file)
-start_lag = 25;
-end_lag = 26;
 
 step_length = (max_samples-min_samples)/nbr_steps;
 true_positives = zeros(end_lag-start_lag,nbr_steps+1);
 false_positives = zeros(end_lag-start_lag,nbr_steps+1);
 
-for lag = start_lag : end_lag
     current_amount_of_samples = max_samples;
     for i=1:nbr_steps+1
     
@@ -15,7 +12,6 @@ for lag = start_lag : end_lag
     true_positives(lag-start_lag+1,i) = true_positive;
     false_positives(lag-start_lag+1,i) = false_positive;
     current_amount_of_samples = current_amount_of_samples - step_length
-end
 
 %plot(linspace(max_samples,min_samples,nbr_steps+1),true_positives,'g');
 %hold on;
