@@ -107,7 +107,8 @@ static double calc_variance(double* sample,int sample_size, double sample_mean)
 		//sum += (sample[i]-sample_mean) * (sample[i]-sample_mean)
 		
 	}
-	return sum / sample_size;
+	//matlab normalizes with n-1
+	return sum / (sample_size-1);
 }
 
 static double calc_min(double* sample, int sample_size)
@@ -171,15 +172,23 @@ void calc_acf(double* samples, int sample_size, double mean, double variance,dou
 	double sum = 0;
 	//allocate return array
 	//double* acf = malloc(sizeof(double)*(AUTO_LAG+1));
-	
+	//double temp[sample_size+1];
 	//for every lag including 0[0..lag]
+	/*for(i=0; i < sample_size;i++)
+	{
+		temp[i] = samples[i]-mean;
+	}
+	*/
 	for(i=0; i <= AUTO_LAG; i++)
 	{	
 		sum = 0;
-		for(j=0;j<=sample_size-i;j++)
+		//FIX BUG LATER < and not <= fix and compare feature
+		for(j=0;j<sample_size-i;j++)
 		{
-			sum +=(samples[j]-mean)*(samples[j+i]-mean);	
+			sum +=(samples[j]-mean)*(samples[j+i]-mean);
+			//sum +=temp[i]*temp[i+j];		
 		}
+		//syslog (LOG_INFO, "%f",(samples[sample_size-i]-mean)*(samples[sample_size-i+i]-mean));
 		acf[i]= sum / ((sample_size-1)*variance);			
 	}	
 	//return acf;
@@ -203,6 +212,7 @@ void calc_acf(double* samples, int sample_size, double mean, double variance,dou
  *     note that X(k)*Y(k+0) == X(k+0)*Y(k)
  *          
  */
+//varför skickar vi med std? kolla
 void calc_xcf(double* samplesX,double* samplesY, int sample_size, double stdX, double stdY,double* xcf)
 {
 
@@ -407,9 +417,9 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	int i;
 	for(i = 0; i< NBR_FEATURES ; i++)
 	{
-		//syslog (LOG_INFO, "feature[%d]: %f",i,features[i]);
-		features[i] = (features[i]-svm_model->features_mean[i]) / svm_model->features_std[i];
 		
+		features[i] = (features[i]-svm_model->features_mean[i]) / svm_model->features_std[i];
+		//syslog (LOG_INFO, "feature[%d]: %f",i,features[i]);
 		 
 	}
 
