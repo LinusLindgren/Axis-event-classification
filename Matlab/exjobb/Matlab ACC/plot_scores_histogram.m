@@ -16,7 +16,7 @@ else
     vector1_train = scores_negative_train;
     vector2_train = scores_positive_train;
 end
-nbr_bins = 40;
+nbr_bins = 200;
 
 %Calculate bin size so that we can calculate the amount of bins in vector2,
 %should be a less amount of bins

@@ -246,11 +246,11 @@ der_sum_auto_corr = squeeze(sum(derivate_auto_corr,1));
 
 
 %% perform training and testing
-clc
+clc, close all
 write_svm_model_to_file = 0;
 plot_score_histogram = 1;
 attempts = 1000;
-alpha = 0.75;
+alpha = 0.9;
 
 
 [averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector, scores_positive_train, scores_negative_train, scores_positive_test, scores_negative_test] ...

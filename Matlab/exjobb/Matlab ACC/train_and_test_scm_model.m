@@ -14,6 +14,9 @@ countMissclassifications = zeros(nposfiles+nnegfiles,1);
 
 scores_positive_train_total = [];
 scores_negative_train_total = [];
+scores_positive_test_total = [];
+scores_negative_test_total = [];
+
 
 scores_positive_test_total = [];
 scores_negative_test_total = [];
@@ -32,28 +35,36 @@ testIndex = setdiff(index,trainIndex);
 %
 featureVector = [sum_auto min_auto cross_corr_max(2,:)' meanFeatures' ...
  minFeatures' ...
-maxFeatures' kurtosis_vec skewness_vec kurtosis_acor skewness_acor ...
-sum_changes' mean_changes'];
+maxFeatures'  skewness_vec kurtosis_acor skewness_acor ...
+sum_changes'  squeeze(psdx_peak_freq_bin_tilt(:,1,:))' squeeze(psdx_peak_freq_bin_tilt(:,2,:))' squeeze(psdx_peak_freq_bin_tilt(:,3,:))'...
+skewness_psdx psdx_nbrPeaks_tilt' ...
+squeeze(psdx_peak_freq_bin(:,1,:))' squeeze(psdx_peak_freq_bin(:,2,:))'];
 
-mean_features = mean(featureVector);
-std_features = std(featureVector);
-featureVector= featureVector - repmat(mean_features,size(featureVector,1),1);
-featureVector = featureVector ./ repmat(std_features,size(featureVector,1),1);
+% mean_features = mean(featureVector);
+% std_features = std(featureVector);
+% featureVector= featureVector - repmat(mean_features,size(featureVector,1),1);
+% featureVector = featureVector ./ repmat(std_features,size(featureVector,1),1);
 
-trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' meanFeatures(:,trainIndex)' ...
- minFeatures(:,trainIndex)' ...
-maxFeatures(:,trainIndex)'  skewness_vec(trainIndex,:) kurtosis_acor(trainIndex,:) skewness_acor(trainIndex,:) ...
-sum_changes(:,trainIndex)'  squeeze(psdx_peak_freq_bin_tilt(:,1,trainIndex))' squeeze(psdx_peak_freq_bin_tilt(:,2,trainIndex))' ...
-skewness_psdx(trainIndex,:) ];
+% trainObservations =  [sum_auto(trainIndex,:) min_auto(trainIndex,:)  cross_corr_max(2,trainIndex)' meanFeatures(:,trainIndex)' ...
+%  minFeatures(:,trainIndex)' ...
+% maxFeatures(:,trainIndex)'  skewness_vec(trainIndex,:) kurtosis_acor(trainIndex,:) skewness_acor(trainIndex,:) ...
+% sum_changes(:,trainIndex)'  squeeze(psdx_peak_freq_bin_tilt(:,1,trainIndex))' squeeze(psdx_peak_freq_bin_tilt(:,2,trainIndex))' squeeze(psdx_peak_freq_bin_tilt(:,3,trainIndex))'...
+% skewness_psdx(trainIndex,:) psdx_nbrPeaks_tilt(:,trainIndex)' ...
+% squeeze(psdx_peak_freq_bin(:,1,trainIndex))' squeeze(psdx_peak_freq_bin(:,2,trainIndex))' ];
+
+trainObservations = featureVector(trainIndex,:);
+
 %psdx_nbrPeaks(:,trainIndex)' psdx_nbrPeaks_tilt(:,trainIndex)'
 %trainObservations = [ sum_changes(2,trainIndex)'  min_auto(trainIndex,3)];
 %trainObservations = ONES(2,trainIndex)';
 trainLabels = label(trainIndex);
 %testobservations = ONES(2,testIndex)';
-testobservations = [sum_auto(testIndex,:) min_auto(testIndex,:) cross_corr_max(2,testIndex)' meanFeatures(:,testIndex)' ... 
- minFeatures(:,testIndex)' maxFeatures(:,testIndex)'  skewness_vec(testIndex,:) kurtosis_acor(testIndex,:) skewness_acor(testIndex,:) ...
- sum_changes(:,testIndex)' squeeze(psdx_peak_freq_bin_tilt(:,1,testIndex))' squeeze(psdx_peak_freq_bin_tilt(:,2,testIndex))' ...
-skewness_psdx(testIndex,:) ];
+% testobservations = [sum_auto(testIndex,:) min_auto(testIndex,:) cross_corr_max(2,testIndex)' meanFeatures(:,testIndex)' ... 
+%  minFeatures(:,testIndex)' maxFeatures(:,testIndex)'  skewness_vec(testIndex,:) kurtosis_acor(testIndex,:) skewness_acor(testIndex,:) ...
+%  sum_changes(:,testIndex)' squeeze(psdx_peak_freq_bin_tilt(:,1,testIndex))' squeeze(psdx_peak_freq_bin_tilt(:,2,testIndex))' squeeze(psdx_peak_freq_bin_tilt(:,3,testIndex))'...
+% skewness_psdx(testIndex,:) psdx_nbrPeaks_tilt(:,testIndex)' ...
+% squeeze(psdx_peak_freq_bin(:,1,testIndex))' squeeze(psdx_peak_freq_bin(:,2,testIndex))' ];
+testobservations = featureVector(testIndex,:);
 %testobservations = [ sum_changes(2,testIndex)'  min_auto(testIndex,3)];
 mean_train = mean(trainObservations);
 std_train = std(trainObservations);
@@ -62,11 +73,13 @@ std_train = std(trainObservations);
 %testobservations = testobservations - repmat(mean_train,size(testobservations,1),1);
 %trainObservations = trainObservations ./ repmat(std_train,size(trainObservations,1),1);
 %testobservations = testobservations ./ repmat(std_train,size(testobservations,1),1);
-
+% 
 trainObservations= trainObservations - repmat(mean_train,size(trainObservations,1),1);
 testobservations = testobservations - repmat(mean_train,size(testobservations,1),1);
 trainObservations = trainObservations ./ repmat(std_train,size(trainObservations,1),1);
 testobservations = testobservations ./ repmat(std_train,size(testobservations,1),1);
+featureVector= featureVector - repmat(mean_train,size(featureVector,1),1);
+featureVector = featureVector ./ repmat(std_train,size(featureVector,1),1);
 
 
 %trainObservations(:,1:3) = trainObservations(:,1:3) - repmat(mean_train(1,1:3),size(trainObservations,1),1);
@@ -90,55 +103,71 @@ SVMModel = fitclinear(trainObservations,trainLabels);
 predictions_train = (pred_labels_train == trainLabels);
 predictions_test = (pred_labels_test == testLabels);
 
-index_train_correct = find(predictions_train==1);
-correct_negative_index_train = find(pred_labels_train(index_train_correct) == 0);
-correct_positive_index_train = find(pred_labels_train(index_train_correct) == 1);
-scores_correct_positive_train = score_train(correct_positive_index_train);
-scores_correct_negative_train = score_train(correct_negative_index_train);
+[pred_labels_feature_vector,scores] = predict(SVMModel,featureVector);
+score_positives = scores(1:nposfiles,2);
+score_negatives = scores(nposfiles+1:nposfiles+nnegfiles,2);
 
-%Below are the incorrect classifications. Hence prediction = 0 means it
-%should have been 1. so it is a score for positive.
-index_train_incorrect = find(predictions_train==0);
-incorrect_negative_index_train = find(pred_labels_train(index_train_incorrect) == 1);
-incorrect_positive_index_train = find(pred_labels_train(index_train_incorrect) == 0);
-scores_incorrect_negative_train = score_train(incorrect_negative_index_train);
-scores_incorrect_positive_train = score_train(incorrect_positive_index_train);
+pos_train_scores = scores(trainIndex(trainIndex <= nposfiles),2);    
+neg_train_scores = scores(trainIndex(trainIndex > nposfiles),2);    
+pos_test_scores = scores(testIndex(testIndex <= nposfiles),2);    
+neg_test_scores = scores(testIndex(testIndex > nposfiles),2); 
 
-% Do the same thing for the test set
-index_test_correct = find(predictions_test==1);
-correct_negative_index_test = find(pred_labels_train(index_test_correct) == 0);
-correct_positive_index_test = find(pred_labels_train(index_test_correct) == 1);
-scores_correct_positive_test = score_train(correct_positive_index_test);
-scores_correct_negative_test = score_train(correct_negative_index_test);
+scores_positive_train_total = [scores_positive_train_total ; pos_train_scores] ;
+scores_negative_train_total = [scores_negative_train_total ; neg_train_scores];
+scores_positive_test_total = [scores_positive_test_total ; pos_test_scores] ;
+scores_negative_test_total = [scores_negative_test_total ; neg_test_scores];
 
-%Below are the incorrect classifications. Hence prediction = 0 means it
-%should have been 1. so it is a score for positive.
-index_test_incorrect = find(predictions_test==0);
-incorrect_negative_index_test = find(pred_labels_train(index_test_incorrect) == 1);
-incorrect_positive_index_test = find(pred_labels_train(index_test_incorrect) == 0);
-scores_incorrect_negative_test = score_train(incorrect_negative_index_test);
-scores_incorrect_positive_test = score_train(incorrect_positive_index_test);
-if(~length(scores_incorrect_positive_train))
-    scores_positive_train = [scores_correct_positive_train,scores_incorrect_positive_train];
-else
-    scores_positive_train = scores_correct_positive_train;
-end
-if(~length(scores_incorrect_negative_train))
-    scores_negative_train = [scores_correct_negative_train, scores_incorrect_negative_train];
-else
-    scores_negative_train = scores_correct_negative_train;
-end
-if(~length(scores_incorrect_positive_test))
-    scores_positive_test = [scores_correct_positive_test,scores_incorrect_positive_test];
-else
-     scores_positive_test = scores_correct_positive_test;
-end
-if(~length(scores_incorrect_negative_test))
-    scores_negative_test = [scores_correct_negative_test, scores_incorrect_negative_test];
-else
-    scores_negative_test = scores_correct_negative_test;
-end
+% index_train_correct = find(predictions_train==1);
+% correct_negative_index_train = find(pred_labels_train(index_train_correct) == 0);
+% correct_positive_index_train = find(pred_labels_train(index_train_correct) == 1);
+% scores_correct_positive_train = score_train(correct_positive_index_train);
+% scores_correct_negative_train = score_train(correct_negative_index_train);
+% 
+% %Below are the incorrect classifications. Hence prediction = 0 means it
+% %should have been 1. so it is a score for positive.
+% index_train_incorrect = find(predictions_train==0);
+% incorrect_negative_index_train = find(pred_labels_train(index_train_incorrect) == 1);
+% incorrect_positive_index_train = find(pred_labels_train(index_train_incorrect) == 0);
+% scores_incorrect_negative_train = score_train(incorrect_negative_index_train);
+% scores_incorrect_positive_train = score_train(incorrect_positive_index_train);
+% 
+% % Do the same thing for the test set
+% index_test_correct = find(predictions_test==1);
+% correct_negative_index_test = find(pred_labels_test(index_test_correct) == 0);
+% correct_positive_index_test = find(pred_labels_test(index_test_correct) == 1);
+% scores_correct_positive_test = score_test(correct_positive_index_test);
+% scores_correct_negative_test = score_test(correct_negative_index_test);
+% 
+% %Below are the incorrect classifications. Hence prediction = 0 means it
+% %should have been 1. so it is a score for positive.
+% index_test_incorrect = find(predictions_test==0);
+% incorrect_negative_index_test = find(pred_labels_test(index_test_incorrect) == 1);
+% incorrect_positive_index_test = find(pred_labels_test(index_test_incorrect) == 0);
+% scores_incorrect_negative_test = score_test(incorrect_negative_index_test);
+% scores_incorrect_positive_test = score_test(incorrect_positive_index_test);
+% 
+% if(length(scores_incorrect_positive_train))
+%     scores_positive_train = [scores_correct_positive_train', scores_incorrect_positive_train'];
+% else
+%     scores_positive_train = scores_correct_positive_train';
+% end
+% if(length(scores_incorrect_negative_train))
+%     scores_negative_train = [scores_correct_negative_train', scores_incorrect_negative_train'];
+% else
+%     scores_negative_train = scores_correct_negative_train';
+% end
+% if(length(scores_incorrect_positive_test))
+%     scores_positive_test = [scores_correct_positive_test',scores_incorrect_positive_test'];
+% else
+%      scores_positive_test = scores_correct_positive_test';
+% end
+% if(length(scores_incorrect_negative_test))
+%     scores_negative_test = [scores_correct_negative_test', scores_incorrect_negative_test'];
+% else
+%     scores_negative_test = scores_correct_negative_test';
+% end
 %Used for counting misclassifications on the individual samples.
+
 result = zeros(size(predictions_test,1),2);
 result(:,1) = predictions_test;
 result(:,2) = testIndex';
@@ -157,10 +186,10 @@ sumOfRatios_test = sumOfRatios_test + ratio_test;
 failingIndexes = testIndex(result(:,1) == 0);
 
 countMissclassifications(failingIndexes,1) = countMissclassifications(failingIndexes,1) + 1;
-scores_positive_train_total = [scores_positive_train_total, scores_positive_train'];
-scores_negative_train_total = [scores_negative_train_total, scores_negative_train'];
-scores_positive_test_total = [scores_positive_test_total, scores_positive_test'];
-scores_negative_test_total = [scores_negative_test_total, scores_negative_test'];
+% scores_positive_train_total = [scores_positive_train_total, scores_positive_train];
+% scores_negative_train_total = [scores_negative_train_total, scores_negative_train];
+% scores_positive_test_total = [scores_positive_test_total, scores_positive_test];
+% scores_negative_test_total = [scores_negative_test_total, scores_negative_test];
 end
 if(write_svm_model_to_file)
     write_svm_model(SVMModel,mean_train, std_train);
