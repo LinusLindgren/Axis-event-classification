@@ -115,6 +115,107 @@ for i = 1 : nposfiles+nnegfiles
         end
 end
 
+%calc periodogram using fft
+N = nbrOfSamples;
+%xdft = fft(x);
+xdft = dft_samples(1:N/2+1,:,:);
+psdx = (1/(target_freq*N)) * abs(xdft(:,:,:)).^2;
+psdx(2:end-1,:,:) = 2*psdx(2:end-1,:,:);
+
+xdft_tilt = dft_tilt(1:N/2+1,:,:);
+psdx_tilt = (1/(target_freq*N)) * abs(xdft_tilt(:,:,:)).^2;
+psdx_tilt(2:end-1,:,:) = 2*psdx_tilt(2:end-1,:,:);
+
+%get nbr peaks within 6 db of highest peak
+psdx_nbrPeaks = zeros(3,nbrfiles);
+bin_size = 30;
+deci_threshold = 6;
+psdx_deci = 10*log10(psdx);
+psdx_deci_tilt = 10*log10(psdx_tilt);
+
+psdx_peak_power_ratio = zeros(3,nbrfiles);
+psdx_peak_power_ratio_tilt = zeros(3,nbrfiles);
+psdx_peak_freq_bin = zeros(ceil(size(psdx_deci,1)/bin_size),3,nbrfiles);
+psdx_peak_freq_bin_tilt = zeros(ceil(size(psdx_deci_tilt,1)/bin_size),3,nbrfiles);
+
+psdx_nbrPeaks_tilt = zeros(3,nbrfiles);
+
+for i = 1 : nbrfiles
+   max_x = max(psdx_deci(:,1,i));
+   max_y = max(psdx_deci(:,2,i));
+   max_z = max(psdx_deci(:,3,i));
+   max_x_tilt = max(psdx_deci_tilt(:,1,i));
+   max_y_tilt = max(psdx_deci_tilt(:,2,i));
+   max_z_tilt = max(psdx_deci_tilt(:,3,i));
+   for j = 1 : size(psdx_deci,1)
+       if psdx_deci(j,1,i) > (max_x-deci_threshold)
+          psdx_nbrPeaks(1,i) =  psdx_nbrPeaks(1,i) +1;
+          psdx_peak_freq_bin(ceil(j/bin_size),1,i) = psdx_peak_freq_bin(ceil(j/bin_size),1,i) + 1;
+          psdx_peak_power_ratio(1,i)= psdx_peak_power_ratio(1,i) + psdx_deci(j,1,i);
+       end
+       if psdx_deci(j,2,i) > (max_y-deci_threshold)
+          psdx_nbrPeaks(2,i) =  psdx_nbrPeaks(2,i) +1;
+          psdx_peak_freq_bin(ceil(j/bin_size),2,i) = psdx_peak_freq_bin(ceil(j/bin_size),2,i) + 1;
+          psdx_peak_power_ratio(2,i)= psdx_peak_power_ratio(2,i) + psdx_deci(j,2,i);
+       end
+       if psdx_deci(j,3,i) > (max_z-deci_threshold)
+          psdx_nbrPeaks(3,i) =  psdx_nbrPeaks(3,i) +1;
+          psdx_peak_freq_bin(ceil(j/bin_size),3,i) = psdx_peak_freq_bin(ceil(j/bin_size),3,i) + 1;
+          psdx_peak_power_ratio(3,i)= psdx_peak_power_ratio(3,i) + psdx_deci(j,3,i);
+       end
+       if psdx_deci_tilt(j,1,i) > (max_x_tilt-deci_threshold)
+          psdx_nbrPeaks_tilt(1,i) =  psdx_nbrPeaks_tilt(1,i) +1;
+          psdx_peak_freq_bin_tilt(ceil(j/bin_size),1,i) = psdx_peak_freq_bin_tilt(ceil(j/bin_size),1,i) + 1;
+          psdx_peak_power_ratio_tilt(1,i)= psdx_peak_power_ratio_tilt(1,i) + psdx_deci_tilt(j,1,i);
+       end
+       if psdx_deci_tilt(j,2,i) > (max_y_tilt-deci_threshold)
+          psdx_nbrPeaks_tilt(2,i) =  psdx_nbrPeaks_tilt(2,i) +1;
+          psdx_peak_freq_bin_tilt(ceil(j/bin_size),2,i) = psdx_peak_freq_bin_tilt(ceil(j/bin_size),2,i) + 1;
+          psdx_peak_power_ratio_tilt(2,i)= psdx_peak_power_ratio_tilt(2,i) + psdx_deci_tilt(j,2,i);
+       end
+       if psdx_deci_tilt(j,3,i) > (max_z_tilt-deci_threshold)
+          psdx_nbrPeaks_tilt(3,i) =  psdx_nbrPeaks_tilt(3,i) +1;
+          psdx_peak_freq_bin_tilt(ceil(j/bin_size),3,i) = psdx_peak_freq_bin_tilt(ceil(j/bin_size),3,i) + 1;
+            psdx_peak_power_ratio_tilt(3,i)= psdx_peak_power_ratio_tilt(3,i) + psdx_deci_tilt(j,3,i);
+       end
+   end
+   psdx_peak_power_ratio(:,i) = psdx_peak_power_ratio(:,i) ./ sum(psdx_deci(:,:,i))';
+   psdx_peak_power_ratio_tilt(:,i) = psdx_peak_power_ratio_tilt(:,i) ./ sum(psdx_deci_tilt(:,:,i))';
+   
+end
+
+psdx_mean = squeeze(mean(psdx,1));
+psdx_max = squeeze(max(psdx,[],1));
+psdx_min = squeeze(min(psdx,[],1));
+psdx_sum = squeeze(sum(psdx,1));
+
+skewness_psdx = squeeze(skewness(psdx))';
+kurtosis_psdx = squeeze(kurtosis(psdx))';
+
+psdx_tilt_mean = squeeze(mean(psdx_tilt,1));
+psdx_tilt_max = squeeze(max(psdx_tilt,[],1));
+psdx_tilt_min = squeeze(min(psdx_tilt,[],1));
+psdx_tilt_sum = squeeze(sum(psdx_tilt,1));
+
+skewness_tilt_psdx = squeeze(skewness(psdx_tilt))';
+kurtosis_tilt_psdx = squeeze(kurtosis(psdx_tilt))';
+% freq = 0:target_freq/nbrOfSamples:target_freq/2;
+% 
+% figure
+% plot(freq,10*log10(psdx(:,1,131)))
+% 
+% figure
+% plot(freq,10*log10(psdx(:,1,231)))
+% 
+% figure
+% plot(freq,10*log10(psdx(:,1,631)))
+% 
+% figure
+% plot(freq,10*log10(psdx(:,1,731)))
+
+
+
+
 
 
 %% Extract correlation features
@@ -156,11 +257,13 @@ alpha = 0.75;
 ,auto_bins,meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures, ...
 maxTiltFeatures,minTiltFeatures, skewness_samples, kurtosis_samples, sum_changes, mean_changes, ...
 der_min, der_max, der_mean, der_sum ,sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor_samples, kurtosis_acor_samples, ...
-sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file);
+sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file, ...
+psdx_nbrPeaks, psdx_nbrPeaks_tilt, psdx_peak_freq_bin, psdx_peak_freq_bin_tilt, psdx_peak_power_ratio, psdx_peak_power_ratio_tilt, ...
+skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx);
 %% plot feature clustering
 
 [sortedBeta,sortingIndices] = sort(abs(SVMModel.Beta),'descend');
-plot_feature_clustering_1Dx3(featureVector(:,1)',featureVector(:,2)',featureVector(:,3)', nposfiles,nnegfiles);
+plot_feature_clustering_1Dx3(psdx_max(1,:),psdx_max(2,:),psdx_max(3,:), nposfiles,nnegfiles);
 %plot_feature_clustering_2D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',nposfiles,nnegfiles);
 %plot_feature_clustering_3D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',featureVector(:,sortingIndices(3))',nposfiles,nnegfiles);
 
