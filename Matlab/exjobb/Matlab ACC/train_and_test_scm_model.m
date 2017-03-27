@@ -1,4 +1,4 @@
-function [averageTestRatio, averageTrainRatio, true_positive_ratio, false_positive_ratio, countMissclassifications,SVMModel, featureVector] = train_and_test_scm_model(attempts, alpha, nposfiles, nnegfiles, sum_auto, min_auto, cross_corr_max, auto_corr_flat, auto_bins, ...
+function [averageTestRatio, averageTrainRatio, true_positive_ratio, false_positive_ratio, countMissclassifications,SVMModel, featureVector, scores_positive_train_total, scores_negative_train_total, scores_positive_test_total, scores_negative_test_total] = train_and_test_scm_model(attempts, alpha, nposfiles, nnegfiles, sum_auto, min_auto, cross_corr_max, auto_corr_flat, auto_bins, ...
     meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures,maxTiltFeatures,minTiltFeatures, skewness_vec, kurtosis_vec, sum_changes, mean_changes, ...
     der_min, der_max, der_mean, der_sum, sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor, kurtosis_acor, ...
     sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file)
@@ -9,6 +9,12 @@ sumOfRatios_train = 0;
 false_positive_sum = 0;
 true_positive_sum = 0;
 countMissclassifications = zeros(nposfiles+nnegfiles,1);
+
+scores_positive_train_total = [];
+scores_negative_train_total = [];
+
+scores_positive_test_total = [];
+scores_negative_test_total = [];
 for i=1:attempts 
 label = zeros(nposfiles+nnegfiles,1);
 label(1:nposfiles,1) = 1;
@@ -71,12 +77,62 @@ testLabels = label(testIndex);
 SVMModel = fitclinear(trainObservations,trainLabels);
 %Try and predict values with the calculated SVMModel for both the train and
 %test data.
-[pred_labels_train,~] = predict(SVMModel,trainObservations);
-[pred_labels_test,~] = predict(SVMModel,testobservations);
+
+[pred_labels_train,score_train] = predict(SVMModel,trainObservations);
+[pred_labels_test,score_test] = predict(SVMModel,testobservations);
+
 
 predictions_train = (pred_labels_train == trainLabels);
 predictions_test = (pred_labels_test == testLabels);
 
+index_train_correct = find(predictions_train==1);
+correct_negative_index_train = find(pred_labels_train(index_train_correct) == 0);
+correct_positive_index_train = find(pred_labels_train(index_train_correct) == 1);
+scores_correct_positive_train = score_train(correct_positive_index_train);
+scores_correct_negative_train = score_train(correct_negative_index_train);
+
+%Below are the incorrect classifications. Hence prediction = 0 means it
+%should have been 1. so it is a score for positive.
+index_train_incorrect = find(predictions_train==0);
+incorrect_negative_index_train = find(pred_labels_train(index_train_incorrect) == 1);
+incorrect_positive_index_train = find(pred_labels_train(index_train_incorrect) == 0);
+scores_incorrect_negative_train = score_train(incorrect_negative_index_train);
+scores_incorrect_positive_train = score_train(incorrect_positive_index_train);
+
+% Do the same thing for the test set
+index_test_correct = find(predictions_test==1);
+correct_negative_index_test = find(pred_labels_train(index_test_correct) == 0);
+correct_positive_index_test = find(pred_labels_train(index_test_correct) == 1);
+scores_correct_positive_test = score_train(correct_positive_index_test);
+scores_correct_negative_test = score_train(correct_negative_index_test);
+
+%Below are the incorrect classifications. Hence prediction = 0 means it
+%should have been 1. so it is a score for positive.
+index_test_incorrect = find(predictions_test==0);
+incorrect_negative_index_test = find(pred_labels_train(index_test_incorrect) == 1);
+incorrect_positive_index_test = find(pred_labels_train(index_test_incorrect) == 0);
+scores_incorrect_negative_test = score_train(incorrect_negative_index_test);
+scores_incorrect_positive_test = score_train(incorrect_positive_index_test);
+if(~length(scores_incorrect_positive_train))
+    scores_positive_train = [scores_correct_positive_train,scores_incorrect_positive_train];
+else
+    scores_positive_train = scores_correct_positive_train;
+end
+if(~length(scores_incorrect_negative_train))
+    scores_negative_train = [scores_correct_negative_train, scores_incorrect_negative_train];
+else
+    scores_negative_train = scores_correct_negative_train;
+end
+if(~length(scores_incorrect_positive_test))
+    scores_positive_test = [scores_correct_positive_test,scores_incorrect_positive_test];
+else
+     scores_positive_test = scores_correct_positive_test;
+end
+if(~length(scores_incorrect_negative_test))
+    scores_negative_test = [scores_correct_negative_test, scores_incorrect_negative_test];
+else
+    scores_negative_test = scores_correct_negative_test;
+end
 %Used for counting misclassifications on the individual samples.
 result = zeros(size(predictions_test,1),2);
 result(:,1) = predictions_test;
@@ -96,7 +152,10 @@ sumOfRatios_test = sumOfRatios_test + ratio_test;
 failingIndexes = testIndex(result(:,1) == 0);
 
 countMissclassifications(failingIndexes,1) = countMissclassifications(failingIndexes,1) + 1;
-
+scores_positive_train_total = [scores_positive_train_total, scores_positive_train'];
+scores_negative_train_total = [scores_negative_train_total, scores_negative_train'];
+scores_positive_test_total = [scores_positive_test_total, scores_positive_test'];
+scores_negative_test_total = [scores_negative_test_total, scores_negative_test'];
 end
 if(write_svm_model_to_file)
     write_svm_model(SVMModel,mean_train, std_train);
