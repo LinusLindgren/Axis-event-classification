@@ -1,0 +1,9 @@
+Saker att göra, som vi ej hunnit gjort än:
+
+
+	* Skriv på rapporten
+	* Nämn i rapporten att vi har antagit att kameran är fast i lodrätt eller vertikalt led.
+	* Såga ut trä för uppsättning av porttelefonen
+	* Göra ett state-transition diagram av klassifieringen.
+	* Minimera lag
+	* Ta reda på vilken skala det är på rå-datan

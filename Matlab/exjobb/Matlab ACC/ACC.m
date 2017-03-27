@@ -248,11 +248,12 @@ der_sum_auto_corr = squeeze(sum(derivate_auto_corr,1));
 %% perform training and testing
 clc
 write_svm_model_to_file = 0;
+plot_score_histogram = 1;
 attempts = 1000;
 alpha = 0.75;
 
 
-[averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector] ...
+[averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector, scores_positive_train, scores_negative_train, scores_positive_test, scores_negative_test] ...
 = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max,auto_corr_flat ...
 ,auto_bins,meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures, ...
 maxTiltFeatures,minTiltFeatures, skewness_samples, kurtosis_samples, sum_changes, mean_changes, ...
@@ -260,13 +261,21 @@ der_min, der_max, der_mean, der_sum ,sumAbsFeatures,sumAllDimFeatures, moments, 
 sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file, ...
 psdx_nbrPeaks, psdx_nbrPeaks_tilt, psdx_peak_freq_bin, psdx_peak_freq_bin_tilt, psdx_peak_power_ratio, psdx_peak_power_ratio_tilt, ...
 skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx);
+
+
+if plot_score_histogram
+
+plot_scores_histogram(scores_positive_train, scores_negative_train, scores_positive_test, scores_negative_test);
+
+end
+
 %% plot feature clustering
 
 [sortedBeta,sortingIndices] = sort(abs(SVMModel.Beta),'descend');
 plot_feature_clustering_1Dx3(psdx_max(1,:),psdx_max(2,:),psdx_max(3,:), nposfiles,nnegfiles);
+
 %plot_feature_clustering_2D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',nposfiles,nnegfiles);
 %plot_feature_clustering_3D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',featureVector(:,sortingIndices(3))',nposfiles,nnegfiles);
-
 
 %% plot train and testing ratio over alpha
 max_alpha = 1.00;
