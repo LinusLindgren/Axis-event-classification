@@ -1,5 +1,8 @@
-function [averageTestRatio, averageTrainRatio, true_positive_ratio, false_positive_ratio, countMissclassifications,SVMModel, featureVector, scores_positive_train_total, scores_negative_train_total, scores_positive_test_total, scores_negative_test_total] = train_and_test_scm_model(attempts, alpha, nposfiles, nnegfiles, sum_auto, min_auto, cross_corr_max, auto_corr_flat, auto_bins, ...
-    meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures,maxTiltFeatures,minTiltFeatures, skewness_vec, kurtosis_vec, sum_changes, mean_changes, ...
+function [averageTestRatio, averageTrainRatio, true_positive_ratio, false_positive_ratio, countMissclassifications,SVMModel, ... 
+    featureVector, scores_positive_train_total, scores_negative_train_total, scores_positive_test_total, scores_negative_test_total, ... 
+    mean_train, std_train] = train_and_test_scm_model(attempts, alpha, nposfiles, nnegfiles, sum_auto, min_auto, cross_corr_max, ...
+    auto_corr_flat, auto_bins, meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures, ... 
+    maxTiltFeatures,minTiltFeatures, skewness_vec, kurtosis_vec, sum_changes, mean_changes, ...
     der_min, der_max, der_mean, der_sum, sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor, kurtosis_acor, ...
     sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file, ...
     psdx_nbrPeaks, psdx_nbrPeaks_tilt, psdx_peak_freq_bin, psdx_peak_freq_bin_tilt, psdx_peak_power_ratio, psdx_peak_power_ratio_tilt, ...
@@ -117,56 +120,7 @@ scores_negative_train_total = [scores_negative_train_total ; neg_train_scores];
 scores_positive_test_total = [scores_positive_test_total ; pos_test_scores] ;
 scores_negative_test_total = [scores_negative_test_total ; neg_test_scores];
 
-% index_train_correct = find(predictions_train==1);
-% correct_negative_index_train = find(pred_labels_train(index_train_correct) == 0);
-% correct_positive_index_train = find(pred_labels_train(index_train_correct) == 1);
-% scores_correct_positive_train = score_train(correct_positive_index_train);
-% scores_correct_negative_train = score_train(correct_negative_index_train);
-% 
-% %Below are the incorrect classifications. Hence prediction = 0 means it
-% %should have been 1. so it is a score for positive.
-% index_train_incorrect = find(predictions_train==0);
-% incorrect_negative_index_train = find(pred_labels_train(index_train_incorrect) == 1);
-% incorrect_positive_index_train = find(pred_labels_train(index_train_incorrect) == 0);
-% scores_incorrect_negative_train = score_train(incorrect_negative_index_train);
-% scores_incorrect_positive_train = score_train(incorrect_positive_index_train);
-% 
-% % Do the same thing for the test set
-% index_test_correct = find(predictions_test==1);
-% correct_negative_index_test = find(pred_labels_test(index_test_correct) == 0);
-% correct_positive_index_test = find(pred_labels_test(index_test_correct) == 1);
-% scores_correct_positive_test = score_test(correct_positive_index_test);
-% scores_correct_negative_test = score_test(correct_negative_index_test);
-% 
-% %Below are the incorrect classifications. Hence prediction = 0 means it
-% %should have been 1. so it is a score for positive.
-% index_test_incorrect = find(predictions_test==0);
-% incorrect_negative_index_test = find(pred_labels_test(index_test_incorrect) == 1);
-% incorrect_positive_index_test = find(pred_labels_test(index_test_incorrect) == 0);
-% scores_incorrect_negative_test = score_test(incorrect_negative_index_test);
-% scores_incorrect_positive_test = score_test(incorrect_positive_index_test);
-% 
-% if(length(scores_incorrect_positive_train))
-%     scores_positive_train = [scores_correct_positive_train', scores_incorrect_positive_train'];
-% else
-%     scores_positive_train = scores_correct_positive_train';
-% end
-% if(length(scores_incorrect_negative_train))
-%     scores_negative_train = [scores_correct_negative_train', scores_incorrect_negative_train'];
-% else
-%     scores_negative_train = scores_correct_negative_train';
-% end
-% if(length(scores_incorrect_positive_test))
-%     scores_positive_test = [scores_correct_positive_test',scores_incorrect_positive_test'];
-% else
-%      scores_positive_test = scores_correct_positive_test';
-% end
-% if(length(scores_incorrect_negative_test))
-%     scores_negative_test = [scores_correct_negative_test', scores_incorrect_negative_test'];
-% else
-%     scores_negative_test = scores_correct_negative_test';
-% end
-%Used for counting misclassifications on the individual samples.
+
 
 result = zeros(size(predictions_test,1),2);
 result(:,1) = predictions_test;
