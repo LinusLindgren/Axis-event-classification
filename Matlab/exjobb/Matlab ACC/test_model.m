@@ -1,6 +1,6 @@
 function [ false_positive_test, true_positive_test, res_test] = test_model( SVMModel, nbrOfSamples ,target_freq,mean_train, std_train)
-[nposfilestest,nnegfilestest,samplestest] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400\postest\acc*' ...
-, 'acc_data\freq400\negtest\acc*');
+[nposfilestest,nnegfilestest,samplestest] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postest\acc*' ...
+, 'acc_data\freq400temp\negtest\acc*');
 [samplestest, ~] = convert_freq(samplestest,400,target_freq);
 nbrfilestest = nposfilestest + nnegfilestest;
 
