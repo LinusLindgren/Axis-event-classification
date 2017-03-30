@@ -14,7 +14,41 @@
 
 #define AUTO_LAG 30
 #define NBR_FEATURES 34
+#define MATH_PI 3.14159265358979323846
 
+void calc_periodogram(double* sample,int sample_size,int freq, double* periodogram)
+{
+
+	double real, imag, abs;
+	int i,j;
+	for(i = 0; i < sample_size/2+1; i++)
+	{
+		real = 0;
+		imag = 0;
+		//fft
+		for(j= 0; j < sample_size;j++)
+		{
+			real += sample[j]* cos(-2*MATH_PI/sample_size * (j-1) * (i-1));
+			imag += sample[j] * sin(-2*MATH_PI/sample_size * (j-1) * (i-1));
+		}
+		//psdx = (1/(Fs*N)) * abs(xdft).^2;
+		abs = sqrt(real*real+imag*imag);
+		periodogram[i] = abs * abs / freq / sample_size;
+	}
+	
+	//psdx(2:end-1) = 2*psdx(2:end-1);
+	for(i = 1 ; i < sample_size/2; i++)
+	{
+		periodogram[i] *= 2;
+	}
+
+	for(i = 0 ; i < sample_size/2+1; i++)
+	{
+		periodogram[i] = 10*log10(periodogram[i]);
+	}
+
+	
+}
 
 static double calc_sum_changes(double* sample, int sample_size)
 {
@@ -330,6 +364,21 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	t2 = clock(); 
 	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
     	syslog (LOG_INFO, "acf mean: %f",diff); 
+
+
+	t1 = clock(); 
+	double periodogramX[sample_size];
+	double periodogramY[sample_size];
+	double periodogramZ[sample_size];
+
+	calc_periodogram(sampleX,sample_size,400,periodogramX);
+	calc_periodogram(sampleY,sample_size,400,periodogramY);
+	calc_periodogram(sampleZ,sample_size,400,periodogramZ);
+
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "psdx: %f",diff); 
+
 	double acor_varianceX = calc_variance(acf_x,AUTO_LAG+1,acor_meanX);
 	double acor_varianceY = calc_variance(acf_y,AUTO_LAG+1,acor_meanY);
 	double acor_varianceZ = calc_variance(acf_z,AUTO_LAG+1,acor_meanZ);
