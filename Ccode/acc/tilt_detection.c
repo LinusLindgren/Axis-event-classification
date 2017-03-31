@@ -1214,7 +1214,7 @@ static void* classify_tampering(gpointer thread_data){
 	free(sample_x);
 	free(sample_y);
 	free(sample_z);
-	exit(0);
+	//exit(0);
 	return NULL;
 }
 
