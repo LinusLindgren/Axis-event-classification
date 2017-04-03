@@ -11,7 +11,7 @@ target_freq = 200;
 %nposfiles1=0;
 %nnegfiles1=0;
 
-[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postemp1-5\acc*' ...
+[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postempAll\acc*' ...
 , 'acc_data\freq400temp\negtemp1-9\acc*');
 [samples2, ~] = convert_freq(samples2,400,target_freq);
 
@@ -34,7 +34,7 @@ nbrOfSamples = nbrOfSamples *  target_freq / 200;
 
 [meanFeatures, maxFeatures, minFeatures, kurtosis_samples, skewness_samples, sumFeatures, ...
     meanTiltFeatures, stdFeatures, stdTiltFeatures, sumAllDimFeatures, maxTiltFeatures, ...
-    minTiltFeatures, der_mean, der_max, der_min, der_sum, moments, sum_changes, mean_changes,sumAbsFeatures] = extract_base_features( samples,nbrOfSamples,nbrfiles );
+    minTiltFeatures, der_mean, der_max, der_min, der_sum, moments, sum_changes, mean_changes,sumAbsFeatures,max_changes, max_changes_index] = extract_base_features( samples,nbrOfSamples,nbrfiles );
 
 
 %% compute dft values
@@ -49,7 +49,7 @@ nbrOfSamples = nbrOfSamples *  target_freq / 200;
 lag = 30;
 [cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat, auto_corr, ...
     skewness_acor_samples, kurtosis_acor_samples, sum_changes_auto, mean_changes_auto, der_mean_auto_corr, ...
-   der_max_auto_corr ,der_min_auto_corr, der_sum_auto_corr] = extract_corr_features(samples,nposfiles,nnegfiles,lag, nbrfiles);
+   der_max_auto_corr ,der_min_auto_corr, der_sum_auto_corr,max_changes_auto, max_changes_index_auto] = extract_corr_features(samples,nposfiles,nnegfiles,lag, nbrfiles);
 
 
 
@@ -60,7 +60,8 @@ write_svm_model_to_file = 1;
 plot_score_histogram = 0;
 attempts = 1000;
 alpha = 0.9;
-
+%averageTestRatioOld = averageTestRatio;
+%averageTrainRatioOld = averageTrainRatio;
 
 
 [averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector, ...
@@ -71,7 +72,7 @@ maxTiltFeatures,minTiltFeatures, skewness_samples, kurtosis_samples, sum_changes
 der_min, der_max, der_mean, der_sum ,sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor_samples, kurtosis_acor_samples, ...
 sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file, ...
 psdx_nbrPeaks, psdx_nbrPeaks_tilt, psdx_peak_freq_bin, psdx_peak_freq_bin_tilt, psdx_peak_power_ratio, psdx_peak_power_ratio_tilt, ...
-skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx);
+skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx,max_changes, max_changes_index, max_changes_auto, max_changes_index_auto);
 
 
 if plot_score_histogram

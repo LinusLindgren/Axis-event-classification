@@ -1,7 +1,7 @@
 function [meanFeatures, maxFeatures, minFeatures, kurtosis_samples, skewness_samples, sumFeatures, ...
     meanTiltFeatures, stdFeatures, stdTiltFeatures, sumAllDimFeatures, maxTiltFeatures, ...
     minTiltFeatures, der_mean, der_max, der_min, der_sum, moments,sum_changes, mean_changes, ...
-    sumAbsFeatures] = extract_base_features( samples,nbrOfSamples,nbrfiles )
+    sumAbsFeatures, max_changes, max_changes_index] = extract_base_features( samples,nbrOfSamples,nbrfiles )
 
 
 
@@ -30,8 +30,12 @@ kurtosis_samples = squeeze(kurtosis(samples))';
 
 sum_changes = zeros(3,nbrfiles);
 mean_changes = zeros(3,nbrfiles);
+changes = zeros(3,nbrOfSamples-1,nbrfiles);
 for i = 1: nbrfiles
    for j = 1 : nbrOfSamples -1
+       changes(1,j,i) = abs(samples(j+1,1,i) -samples(j,1,i));
+       changes(2,j,i) = abs(samples(j+1,2,i) -samples(j,2,i));
+       changes(3,j,i) = abs(samples(j+1,3,i) -samples(j,3,i));
        sum_changes(1,i) = sum_changes(1,i) + abs(samples(j+1,1,i) -samples(j,1,i));
        sum_changes(2,i) = sum_changes(2,i) + abs(samples(j+1,2,i) -samples(j,2,i));
        sum_changes(3,i) = sum_changes(3,i) + abs(samples(j+1,3,i) -samples(j,3,i));
@@ -40,6 +44,11 @@ for i = 1: nbrfiles
    mean_changes(2,i) = sum_changes(2,i)/(nbrOfSamples-1);
    mean_changes(3,i) = sum_changes(3,i)/(nbrOfSamples-1);
 end
+
+[max_changes, max_changes_index] = max(changes,[],2);
+max_changes = squeeze(max_changes);
+max_changes_index = squeeze(max_changes_index);
+
 
 derivate = diff(samples);
 der_mean = squeeze(mean(derivate,1));

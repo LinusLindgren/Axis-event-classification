@@ -6,7 +6,7 @@ function [averageTestRatio, averageTrainRatio, true_positive_ratio, false_positi
     der_min, der_max, der_mean, der_sum, sumAbsFeatures,sumAllDimFeatures, moments, skewness_acor, kurtosis_acor, ...
     sum_changes_auto, mean_changes_auto, der_min_auto_corr, der_max_auto_corr, der_mean_auto_corr, der_sum_auto_corr,write_svm_model_to_file, ...
     psdx_nbrPeaks, psdx_nbrPeaks_tilt, psdx_peak_freq_bin, psdx_peak_freq_bin_tilt, psdx_peak_power_ratio, psdx_peak_power_ratio_tilt, ...
-    skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx)
+    skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx,max_changes, max_changes_index,max_changes_auto, max_changes_index_auto)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 sumOfRatios_test = 0;
@@ -41,7 +41,7 @@ featureVector = [sum_auto min_auto cross_corr_max(2,:)' meanFeatures' ...
 maxFeatures'  skewness_vec kurtosis_acor skewness_acor ...
 sum_changes'  squeeze(psdx_peak_freq_bin_tilt(:,1,:))' squeeze(psdx_peak_freq_bin_tilt(:,2,:))' squeeze(psdx_peak_freq_bin_tilt(:,3,:))'...
 skewness_psdx psdx_nbrPeaks_tilt' ...
-squeeze(psdx_peak_freq_bin(:,1,:))' squeeze(psdx_peak_freq_bin(:,2,:))'];
+squeeze(psdx_peak_freq_bin(:,1,:))' squeeze(psdx_peak_freq_bin(:,2,:))' meanTiltFeatures'  stdFeatures(2,:)' sum_changes_auto' max_changes(2,:)'];
 
 % mean_features = mean(featureVector);
 % std_features = std(featureVector);
@@ -100,7 +100,8 @@ weights = zeros(nposfiles+nnegfiles,1);
 weights(1:nposfiles,1) = 1 / nposfiles;
 weights(nposfiles+1:nposfiles+nnegfiles,1) = 1 / nnegfiles;
 
-SVMModel = fitclinear(trainObservations,trainLabels, 'weights', weights(trainIndex));
+SVMModel = fitclinear(trainObservations,trainLabels);
+%, 'weights', weights(trainIndex
 %Try and predict values with the calculated SVMModel for both the train and
 %test data.
 
