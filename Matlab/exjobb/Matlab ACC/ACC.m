@@ -78,7 +78,11 @@ if plot_score_histogram
 plot_scores_histogram(scores_positive_train, scores_negative_train, scores_positive_test, scores_negative_test);
 
 end
-
+%% plot effect of pivot change for test ratio
+[ max_neg, new_ratio_for_pivot_change ] = no_door_left_behind(scores_positive_test ,scores_negative_test  );
+plot(new_ratio_for_pivot_change(:,1),new_ratio_for_pivot_change(:,2),'r');
+hold on
+plot(new_ratio_for_pivot_change(:,1),new_ratio_for_pivot_change(:,3),'g');
 
 %% test svmmodel with test set
 [ false_positive_test, true_positive_test, res] = test_model( SVMModel, nbrOfSamples,target_freq, mean_train, std_train );
