@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include "extract_acc_features.h"
 #include <float.h>
+#include "kiss_fft.h"
+#include "calc_periodogram_features.h"
+#include "feature_util.h"
 
 #include <time.h>
 #include <glib.h>
@@ -13,7 +16,19 @@
 #include <syslog.h>
 
 #define AUTO_LAG 30
-#define NBR_FEATURES 34
+#define NBR_FEATURES 59
+#define MATH_PI 3.14159265358979323846
+
+static double* calc_tilt(double* sample_A, double* sample_B, int size)
+{
+	double* tilt_values = malloc(size*sizeof(double));
+	int i;
+	for(i = 0; i < size; i++)
+	{
+		tilt_values[i] = atan2(sample_A[i],sample_B[i]);
+	}	
+	return tilt_values;
+}	
 
 
 static double calc_sum_changes(double* sample, int sample_size)
@@ -27,128 +42,6 @@ static double calc_sum_changes(double* sample, int sample_size)
 	return sum;
 }
 
-
-static double calc_skewness(double* sample, int sample_size,double mean, double variance)
-{
-	int i;	
-	// (1/n) * sum 1->n with (x-mean)^3
-	double nominator = 0;
-	// (  sqrt(  (1/n) * sum 1->n with (x-mean)^2  )  )^2
-	//double denominator = 0;
-	for(i = 0; i < sample_size; i++)
-	{
-		//nominator+= pow(sample[i] - mean,3); 
-		nominator+= (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean); 
-		//denominator+= pow(sample[i] - mean,2); 
-	}
-	nominator /= sample_size;
-	//denominator /= sample_size;
-	//denominator = sqrt(denominator);
-	double denominator = pow(variance,1.5);
-	return nominator / denominator;
-	
-}
-
-static double calc_kurtosis(double* sample, int sample_size, double mean,double variance)
-{
-	
-	int i;	
-	// (1/n) * sum 1->n with (x-mean)^4
-	double nominator = 0;
-	// ((1/n) * sum 1->n with (x-mean)^2)^2
-	//double denominator = 0;
-	for(i = 0; i < sample_size; i++)
-	{
-		//nominator+= pow(sample[i] - mean,4); 
-		nominator+= (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean);
-		//denominator+= pow(sample[i] - mean,2); 
-	}
-	nominator /= sample_size;
-	//denominator /= sample_size;
-	double denominator = pow(variance,2);
-	return nominator / denominator;
-}
-
-/*
-//E(X-mean)^k /std^k where k = 3 -> skewness and k = 4 -> kurtosis
-static double calc_normalized_moment(double* sample, int sample_size,double mean, double std, int k)
-{
-	//calc E(X-mean)
-	int i;	
-	double sum = 0;
-	for(i = 0; i < sample_size; i++)
-	{
-		sum += sample[i] - mean; 
-	}
-	sum /= sample_size;
-	//return E(X-mean)^k /std^k
-	return pow(sum,k) / pow(std,k);
-}
-*/
-
-static double calc_mean(double* sample,int sample_size)
-{
-	int i;
-	double sum = 0;
-	for(i = 0; i < sample_size;i++)
-	{
-		sum += sample[i];	
-	}	
-	return sum / sample_size;
-}
-
-static double calc_variance(double* sample,int sample_size, double sample_mean)
-{
-	int i;
-	double sum = 0;
-	for(i = 0; i < sample_size; i++)
-	{	
-		sum += pow(sample[i]-sample_mean,2);
-		//sum += (sample[i]-sample_mean) * (sample[i]-sample_mean)
-		
-	}
-	//matlab normalizes with n-1
-	return sum / (sample_size-1);
-}
-
-static double calc_min(double* sample, int sample_size)
-{
-	int i;
-	double min = DBL_MAX;
-	for(i = 0; i < sample_size; i++)
-	{
-		if(sample[i]<min)
-		{
-			min = sample[i];
-		}	
-	}
-	return min;
-}
-
-static double calc_max(double* sample, int sample_size)
-{
-	int i;
-	double max = DBL_MIN;
-	for(i = 0; i < sample_size; i++)
-	{
-		if(sample[i] > max)
-		{
-			max = abs(sample[i]);
-		}	
-	}
-	return max;
-}
-
-static double calc_sum(double* sample, int sample_size)
-{
-	int i;
-	double sum = 0;
-	for(i = 0; i < sample_size; i++)
-	{
-		sum += sample[i];	
-	}
-	return sum;
-}
 
 /**
  * calc_acf:
@@ -264,12 +157,23 @@ the max of the absolute value crosscorrelation between X & Z, the max of the abs
 
 
 // Extracts the accelerometer features from a sample. The number of features are stated in NBR_FEATURES.
-double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sample_size,svm_linear_model_data_type* svm_model)
+double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sample_size,svm_linear_model_data_type* svm_model, int sample_freq)
 {
-
+	int i;
 	clock_t t1, t2;
- 	
+ 	float diff;
+
+	//calc tilt values
+	t1 = clock(); 
+	double* tiltXY = calc_tilt(sampleX,sampleY,sample_size);
+	double* tiltXZ = calc_tilt(sampleX,sampleY,sample_size);
+	double* tiltYZ = calc_tilt(sampleX,sampleY,sample_size);
+
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "calc tilt: %f",diff);
 	
+	//calc mean and variance
 	t1 = clock(); 
 	double* features = malloc(sizeof(double)*NBR_FEATURES);
 	double meanX = calc_mean(sampleX,sample_size);
@@ -280,8 +184,9 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	double varianceY = calc_variance(sampleY,sample_size,meanY);
 	double varianceZ = calc_variance(sampleZ,sample_size,meanZ);
 	t2 = clock(); 
-	float diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
     	syslog (LOG_INFO, "mean/variance: %f",diff); 
+
 	//auto correlation for every dimension
 	t1 = clock(); 
 	double acf_x[AUTO_LAG+1];
@@ -294,14 +199,10 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
     	syslog (LOG_INFO, "acf: %f",diff); 
 	
+	//calc cross correlation
 	t1 = clock(); 
-	//double xcf_xy[2*sample_size-1];
 	double xcf_xz[2*sample_size-1];
-	//double xcf_yz[2*sample_size-1];
-	//cross correlation for every dimension pair
-	//calc_xcf(sampleX,sampleY,sample_size,sqrt(varianceX),sqrt(varianceY),xcf_xy);	
 	calc_xcf(sampleX,sampleZ,sample_size,sqrt(varianceX),sqrt(varianceZ),xcf_xz);	
-	//calc_xcf(sampleY,sampleZ,sample_size,sqrt(varianceY),sqrt(varianceZ),xcf_yz);	
 	t2 = clock(); 
 	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
     	syslog (LOG_INFO, "xcf: %f",diff); 
@@ -327,30 +228,39 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	double acor_meanY = calc_mean(acf_y,AUTO_LAG+1);
 	double acor_meanZ = calc_mean(acf_z,AUTO_LAG+1);
 
-	t2 = clock(); 
-	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
-    	syslog (LOG_INFO, "acf mean: %f",diff); 
 	double acor_varianceX = calc_variance(acf_x,AUTO_LAG+1,acor_meanX);
 	double acor_varianceY = calc_variance(acf_y,AUTO_LAG+1,acor_meanY);
 	double acor_varianceZ = calc_variance(acf_z,AUTO_LAG+1,acor_meanZ);
-
-	//xcf features max(abs(xcf) for every dimension pair
-	//double xcf_xy_max = calc_max(xcf_xy,sample_size*2-1);
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "acf mean: %f",diff); 
+	
 	double xcf_xz_max = calc_max(xcf_xz,sample_size*2-1);
-	//double xcf_yz_max = calc_max(xcf_yz,sample_size*2-1);
+
+
+
+
+
+	t1 = clock(); 
+
+	psdx_feature_data_type* psdx_raw[3];
+	psdx_feature_data_type* psdx_tilt[3];
+
+
+	psdx_raw[0] = extract_psdx_features(sampleX, sample_size,sample_freq);
+	psdx_raw[1] = extract_psdx_features(sampleY, sample_size,sample_freq);
+	psdx_raw[2] = extract_psdx_features(sampleZ, sample_size,sample_freq);
+	psdx_tilt[0] = extract_psdx_features(tiltXY, sample_size,sample_freq);
+	psdx_tilt[1] = extract_psdx_features(tiltXZ, sample_size,sample_freq);
+	psdx_tilt[2] = extract_psdx_features(tiltYZ, sample_size,sample_freq);
+
+
+
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "psdx features: %f",diff);
+
 	
-	//normalize using the 2-norm
-	//double norm = sqrt(pow(xcf_xy_max,2) + pow(xcf_xz_max,2) + pow(xcf_yz_max,2));
-	//hur normalisera?
-	//double norm = sqrt(pow(xcf_xz_max,2));
-	//xcf_xy_max = xcf_xy_max / norm;
-
-
-	
-	//xcf_xz_max = (xcf_xz_max - XCF_XZ_MEAN)/ XCF_XZ_STD;
-	//xcf_yz_max = xcf_yz_max / norm;
-
-
 	//add the features in the predefined order
 	
 	//enter acf sum features
@@ -384,52 +294,101 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	//möjlighet att optimera, dumt att beräka moment flera gånger, men bör vara marginell skillnad
 	//enter kurtosis for raw data
 	t1 = clock(); 
-	features[16] = calc_kurtosis(sampleX,sample_size,meanX,varianceX);
-	features[17] = calc_kurtosis(sampleY,sample_size,meanY,varianceY);
-	features[18] = calc_kurtosis(sampleZ,sample_size,meanZ,varianceZ);
 	//enter skewness for raw data
-	features[19] = calc_skewness(sampleX,sample_size,meanX,varianceX);
-	features[20] = calc_skewness(sampleY,sample_size,meanY,varianceY);
-	features[21] = calc_skewness(sampleZ,sample_size,meanZ,varianceZ);
+	features[16] = calc_skewness(sampleX,sample_size,meanX,varianceX);
+	features[17] = calc_skewness(sampleY,sample_size,meanY,varianceY);
+	features[18] = calc_skewness(sampleZ,sample_size,meanZ,varianceZ);
 	//enter kurtosis for acor data
-	features[22] = calc_kurtosis(acf_x,AUTO_LAG+1,acor_meanX,acor_varianceX);
-	features[23] = calc_kurtosis(acf_y,AUTO_LAG+1,acor_meanY,acor_varianceY);
-	features[24] = calc_kurtosis(acf_z,AUTO_LAG+1,acor_meanZ,acor_varianceZ);
+	features[19] = calc_kurtosis(acf_x,AUTO_LAG+1,acor_meanX,acor_varianceX);
+	features[20] = calc_kurtosis(acf_y,AUTO_LAG+1,acor_meanY,acor_varianceY);
+	features[21] = calc_kurtosis(acf_z,AUTO_LAG+1,acor_meanZ,acor_varianceZ);
 	//enter skewness for acor data
-	features[25] = calc_skewness(acf_x,AUTO_LAG+1,acor_meanX,acor_varianceX);
-	features[26] = calc_skewness(acf_y,AUTO_LAG+1,acor_meanY,acor_varianceY);
-	features[27] = calc_skewness(acf_z,AUTO_LAG+1,acor_meanZ,acor_varianceZ);
+	features[22] = calc_skewness(acf_x,AUTO_LAG+1,acor_meanX,acor_varianceX);
+	features[23] = calc_skewness(acf_y,AUTO_LAG+1,acor_meanY,acor_varianceY);
+	features[24] = calc_skewness(acf_z,AUTO_LAG+1,acor_meanZ,acor_varianceZ);
 	t2 = clock(); 
 	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
     	syslog (LOG_INFO, "kurtosis/skewness for acf/raw: %f",diff); 
 	//enter sum changes
 	t1 = clock(); 
-	features[28] = calc_sum_changes(sampleX,sample_size);
-	features[29] = calc_sum_changes(sampleY,sample_size);
-	features[30] = calc_sum_changes(sampleZ,sample_size);
-	// enter sum changes mean, probably dumb, remove later
-	features[31] = features[28]/(sample_size-1);
-	features[32] = features[29]/(sample_size-1);
-	features[33] = features[30]/(sample_size-1);
+	features[25] = calc_sum_changes(sampleX,sample_size);
+	features[26] = calc_sum_changes(sampleY,sample_size);
+	features[27] = calc_sum_changes(sampleZ,sample_size);
 	t2 = clock(); 
 	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
     	syslog (LOG_INFO, "sum/mean changes: %f",diff); 
-	int i;
+	// enter sum changes mean, probably dumb, remove later
+
+	//enter freq bin for psdx tilt
+	for(i = 0; i < 5; i++)
+	{
+		//features[28+i]= psdx_freq_bins_tilt_xy[i];
+		features[28+i]= psdx_tilt[0]->psdx_freq_bins[i];
+	}
+	for(i = 0; i < 5; i++)
+	{
+		features[33+i]= psdx_tilt[1]->psdx_freq_bins[i];
+	}
+	for(i = 0; i < 5; i++)
+	{
+		features[38+i]= psdx_tilt[2]->psdx_freq_bins[i];
+	}
+
+	//calc skewness for psdx
+	t1 = clock(); 
+	double psdx_x_mean = calc_mean(psdx_raw[0]->psdx,psdx_raw[0]->size);
+	double psdx_x_variance = calc_variance(psdx_raw[0]->psdx,psdx_raw[0]->size,psdx_x_mean);
+	features[43] = calc_skewness(psdx_raw[0]->psdx,psdx_raw[0]->size,psdx_x_mean,psdx_x_variance);
+
+	double psdx_y_mean = calc_mean(psdx_raw[1]->psdx,psdx_raw[1]->size);
+	double psdx_y_variance = calc_variance(psdx_raw[1]->psdx,psdx_raw[1]->size,psdx_y_mean);
+	features[44] = calc_skewness(psdx_raw[1]->psdx,psdx_raw[1]->size,psdx_y_mean,psdx_y_variance);
+
+	double psdx_z_mean = calc_mean(psdx_raw[2]->psdx,psdx_raw[2]->size);
+	double psdx_z_variance = calc_variance(psdx_raw[2]->psdx,psdx_raw[2]->size,psdx_z_mean);
+	features[45] = calc_skewness(psdx_raw[2]->psdx,psdx_raw[2]->size,psdx_z_mean,psdx_z_variance);
+	t2 = clock(); 
+	diff = ((float)(t2 - t1) / 1000000.0F ) * 1000;   
+    	syslog (LOG_INFO, "skewness for psdx: %f",diff); 
+
+	features[46] = psdx_tilt[0]->nbr_freq_peaks;
+	features[47] = psdx_tilt[1]->nbr_freq_peaks;
+	features[48] = psdx_tilt[2]->nbr_freq_peaks;
+	
+	for(i = 0; i < 5; i++)
+	{
+		features[49+i]= psdx_raw[0]->psdx_freq_bins[i];
+	}
+	for(i = 0; i < 5; i++)
+	{
+		features[54+i]= psdx_raw[1]->psdx_freq_bins[i];
+	}	
+	
 	for(i = 0; i< NBR_FEATURES ; i++)
 	{
 		
 		features[i] = (features[i]-svm_model->features_mean[i]) / svm_model->features_std[i];
-		//syslog (LOG_INFO, "feature[%d]: %f",i,features[i]);
+		if(isnan(features[i]))
+		{
+			syslog (LOG_INFO, "-- CAUGHT NAN -- feature[%d]: %f",i,features[i]);
+		}
+		
+		
 		 
 	}
 
+	free(tiltXY);
+	free(tiltXZ);
+	free(tiltYZ);
 
-	//free(acf_x);
-	//free(acf_y);
-	//free(acf_z);
-	//free(xcf_xy);
-	//free(xcf_xz);
-	//free(xcf_yz);
+	free_psdx_feature_data_type(psdx_raw[0]);
+	free_psdx_feature_data_type(psdx_raw[1]);
+	free_psdx_feature_data_type(psdx_raw[2]);
+	free_psdx_feature_data_type(psdx_tilt[0]);
+	free_psdx_feature_data_type(psdx_tilt[1]);
+	free_psdx_feature_data_type(psdx_tilt[2]);
+
+
 	return features;
 }
 
