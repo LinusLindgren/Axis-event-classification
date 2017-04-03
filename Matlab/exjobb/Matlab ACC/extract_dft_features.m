@@ -11,9 +11,9 @@ tiltXY = calc_tilt(samples(:,2,:),samples(:,1,:),nbrOfSamples);
 dft_samples = calc_dft(samples,nposfiles,nnegfiles,nbrOfSamples);
 %fix tiltVector
 tiltAsSamp = zeros(nbrOfSamples,3,nposfiles+nnegfiles);
-tiltAsSamp(:,1,:) = tiltXZ;
-tiltAsSamp(:,2,:) = tiltYZ;
-tiltAsSamp(:,3,:) = tiltXY;
+tiltAsSamp(:,1,:) = tiltXY;
+tiltAsSamp(:,2,:) = tiltXZ;
+tiltAsSamp(:,3,:) = tiltYZ;
 dft_tilt = calc_dft(tiltAsSamp,nposfiles,nnegfiles,nbrOfSamples);
 
 [sortedValuesSamplesX,sortIndexSamplesX] = sort(dft_samples(:,1,:),'descend');

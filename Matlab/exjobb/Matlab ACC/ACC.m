@@ -56,7 +56,7 @@ lag = 30;
 
 %% perform training and testing
 clc, close all
-write_svm_model_to_file = 0;
+write_svm_model_to_file = 1;
 plot_score_histogram = 0;
 attempts = 1000;
 alpha = 0.8;
@@ -86,10 +86,10 @@ end
 %% plot feature clustering
 
 [sortedBeta,sortingIndices] = sort(abs(SVMModel.Beta),'descend');
-plot_feature_clustering_1Dx3(psdx_max(1,:),psdx_max(2,:),psdx_max(3,:), nposfiles,nnegfiles);
-
+%plot_feature_clustering_1Dx3(psdx_max(1,:),psdx_max(2,:),psdx_max(3,:), nposfiles,nnegfiles);
+%plot_feature_clustering_1Dx3(featureVector(:,sortingIndices(1)),featureVector(:,sortingIndices(2)),featureVector(:,sortingIndices(3)), nposfiles,nnegfiles);
 %plot_feature_clustering_2D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',nposfiles,nnegfiles);
-%plot_feature_clustering_3D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',featureVector(:,sortingIndices(3))',nposfiles,nnegfiles);
+plot_feature_clustering_3D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',featureVector(:,sortingIndices(3))',nposfiles,nnegfiles);
 
 %% plot train and testing ratio over alpha
 max_alpha = 1.00;

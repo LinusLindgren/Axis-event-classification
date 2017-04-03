@@ -8,8 +8,8 @@ function [] = plot_feature_clustering_3D(vector1, vector2, vector3, nposfiles,nn
     
     title('Scatter block of 3 maximum weighted features');
     xlabel('Maximum value of raw data in the Y dimension');
-    ylabel('Summation of the autocorrelation in the Z dimension');
-    zlabel('Minimum of the auto-correlation in the Z dimension');
+    ylabel('Minimum value of raw data in the Y dimension');
+    zlabel('Sum of the discrete derivative in the Y dimension');
 
 end
 
