@@ -59,7 +59,7 @@ clc, close all
 write_svm_model_to_file = 1;
 plot_score_histogram = 0;
 attempts = 1000;
-alpha = 0.8;
+alpha = 1.0;
 
 
 [averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector, ...
