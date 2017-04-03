@@ -95,7 +95,12 @@ testLabels = label(testIndex);
 %SVMModel = fitctree(trainObservations,trainLabels);
 %SVMModel = TreeBagger(10,trainObservations,trainLabels)
 %SVMModel = fitcknn(trainObservations,trainLabels,'NumNeighbors',15,'Standardize',1);
-SVMModel = fitclinear(trainObservations,trainLabels);
+
+weights = zeros(nposfiles+nnegfiles,1);
+weights(1:nposfiles,1) = 1 / nposfiles;
+weights(nposfiles+1:nposfiles+nnegfiles,1) = 1 / nnegfiles;
+
+SVMModel = fitclinear(trainObservations,trainLabels, 'weights', weights(trainIndex));
 %Try and predict values with the calculated SVMModel for both the train and
 %test data.
 
