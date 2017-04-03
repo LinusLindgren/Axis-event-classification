@@ -12,7 +12,7 @@ target_freq = 200;
 %nnegfiles1=0;
 
 [nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postemp1-5\acc*' ...
-, 'acc_data\freq400temp\negtemp1-5\acc*');
+, 'acc_data\freq400temp\negtemp1-6\acc*');
 [samples2, ~] = convert_freq(samples2,400,target_freq);
 
 
