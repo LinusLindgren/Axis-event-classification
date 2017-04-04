@@ -11,8 +11,8 @@ target_freq = 200;
 %nposfiles1=0;
 %nnegfiles1=0;
 
-[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postempAll\acc*' ...
-, 'acc_data\freq400temp\negtemp1-9\acc*');
+[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postemp1-5\acc*' ...
+, 'acc_data\freq400temp\negtemp1-5\acc*');
 [samples2, ~] = convert_freq(samples2,400,target_freq);
 
 
@@ -59,9 +59,12 @@ clc, close all
 write_svm_model_to_file = 0;
 plot_score_histogram = 0;
 attempts = 1000;
-alpha = 0.9;
-%averageTestRatioOld = averageTestRatio;
-%averageTrainRatioOld = averageTrainRatio;
+alpha = 0.90;
+if exist('averageTestRatio')
+    averageTestRatioOld = averageTestRatio;
+    averageTrainRatioOld = averageTrainRatio;
+end
+
 
 
 [averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector, ...
@@ -105,8 +108,11 @@ write_svm_model_to_file = 0;
 
 %% Plot decrease
 max_samples = 256;
-min_samples = 64;
-nbr_steps = 32;
-write_svm_model_to_file = 0;
-[max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file);
+min_samples = 32;
+nbr_steps = 64;
+lag = 30;
+alpha = 0.9;
 
+write_svm_model_to_file = 0;
+%[max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file);
+plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, 500,alpha, write_svm_model_to_file,target_freq);
