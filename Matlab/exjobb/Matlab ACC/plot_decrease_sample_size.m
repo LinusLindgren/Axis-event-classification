@@ -8,6 +8,7 @@ false_positives = zeros(end_lag-start_lag,nbr_steps+1);
     for i=1:nbr_steps+1
     
     [cross_corr_max, sum_auto, min_auto, ~, ~, ~, ~] = extract_corr_features(samples(1:current_amount_of_samples,:,:),nposfiles,nnegfiles,lag);
+   
     [~, true_positive, false_positive, ~] = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max, write_svm_model_to_file);
     true_positives(lag-start_lag+1,i) = true_positive;
     false_positives(lag-start_lag+1,i) = false_positive;

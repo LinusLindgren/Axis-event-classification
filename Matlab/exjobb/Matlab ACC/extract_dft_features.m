@@ -62,7 +62,8 @@ psdx_tilt(2:end-1,:,:) = 2*psdx_tilt(2:end-1,:,:);
 
 %get nbr peaks within 6 db of highest peak
 psdx_nbrPeaks = zeros(3,nbrfiles);
-bin_size = 30;
+%hårdkodat fixa senare
+bin_size = 30 * nbrOfSamples/256;
 deci_threshold = 6;
 psdx_deci = 10*log10(psdx);
 psdx_deci_tilt = 10*log10(psdx_tilt);

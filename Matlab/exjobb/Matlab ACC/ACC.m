@@ -56,12 +56,12 @@ lag = 30;
 
 %% perform training and testing
 clc, close all
-write_svm_model_to_file = 1;
+write_svm_model_to_file = 0;
 plot_score_histogram = 0;
 attempts = 1000;
-alpha = 0.90;
-averageTestRatioOld = averageTestRatio;
-averageTrainRatioOld = averageTrainRatio;
+alpha = 0.9;
+%averageTestRatioOld = averageTestRatio;
+%averageTrainRatioOld = averageTrainRatio;
 
 
 [averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector, ...
