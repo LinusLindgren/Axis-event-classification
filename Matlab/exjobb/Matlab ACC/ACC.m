@@ -1,7 +1,7 @@
 %% read samples
 clear, clc, close all
 %
-nbrOfSamples = 256;
+nbrOfSamples = 64;
 
 target_freq = 200;
 [nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'acc_data\freq200temp\postemp\acc*' ...
@@ -11,8 +11,8 @@ target_freq = 200;
 %nposfiles1=0;
 %nnegfiles1=0;
 
-[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postemp1-5\acc*' ...
-, 'acc_data\freq400temp\negtemp1-5\acc*');
+[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postempAll\acc*' ...
+, 'acc_data\freq400temp\negtemp1-9\acc*');
 [samples2, ~] = convert_freq(samples2,400,target_freq);
 
 
@@ -83,6 +83,8 @@ if plot_score_histogram
 plot_scores_histogram(scores_positive_train, scores_negative_train, scores_positive_test, scores_negative_test);
 
 end
+
+
 %% plot effect of pivot change for test ratio
 [ max_neg, new_ratio_for_pivot_change ] = no_door_left_behind(scores_positive_test ,scores_negative_test  );
 plot(new_ratio_for_pivot_change(:,1),new_ratio_for_pivot_change(:,2),'r');
@@ -109,10 +111,18 @@ write_svm_model_to_file = 0;
 %% Plot decrease
 max_samples = 256;
 min_samples = 32;
-nbr_steps = 64;
+nbr_steps = 56;
 lag = 30;
 alpha = 0.9;
 
 write_svm_model_to_file = 0;
 %[max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file);
 plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, 500,alpha, write_svm_model_to_file,target_freq);
+%% plot frequency decrease
+nbr_steps = 3;
+alpha = 0.9;
+write_svm_model_to_file = 0;
+attempts = 1;
+
+plot_decrease_freq(samples, nbr_steps,nposfiles,nnegfiles, attempts,alpha, write_svm_model_to_file,200)
+
