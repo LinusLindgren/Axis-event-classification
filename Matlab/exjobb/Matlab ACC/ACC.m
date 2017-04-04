@@ -11,8 +11,8 @@ target_freq = 200;
 %nposfiles1=0;
 %nnegfiles1=0;
 
-[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postempAll\acc*' ...
-, 'acc_data\freq400temp\negtemp1-9\acc*');
+[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postemp1-5\acc*' ...
+, 'acc_data\freq400temp\negtemp1-5\acc*');
 [samples2, ~] = convert_freq(samples2,400,target_freq);
 
 
@@ -56,12 +56,16 @@ lag = 30;
 
 %% perform training and testing
 clc, close all
-write_svm_model_to_file = 1;
+write_svm_model_to_file = 0;
 plot_score_histogram = 0;
 attempts = 1000;
 alpha = 0.90;
-averageTestRatioOld = averageTestRatio;
+if exist('averageTestRatio')
+    
+    averageTestRatioOld = averageTestRatio;
 averageTrainRatioOld = averageTrainRatio;
+end
+
 
 
 [averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector, ...
