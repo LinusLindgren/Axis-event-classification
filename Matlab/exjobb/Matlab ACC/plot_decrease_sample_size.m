@@ -51,10 +51,10 @@ x = linspace(max_samples,min_samples, nbr_steps+1);
 fit_true_positive = fit(x',true_positives,'smoothingspline');
 fit_false_positive = fit(x',1-false_positives,'smoothingspline');
 figure
-plot(fit_true_positive,'b',x',true_positives','.r');
+plot(fit_true_positive,'r',x',true_positives','.r');
 hold on
-plot(fit_false_positive,'r',x',1-false_positives','.b');
-legend('Fitted curve true positive ratio','True positive data points', 'Fitted curve true negative ratio', 'True negative data points');
+plot(fit_false_positive,'b',x',1-false_positives','.b');
+legend('True positive datapoints','True positive fitted curve','True negative datapoints','True positive fitted curve');
 % [X,Y] = meshgrid(linspace(max_samples,min_samples,nbr_steps+1), start_lag:end_lag);
 % figure
 % mesh(X,Y,true_positives);
