@@ -1,4 +1,4 @@
-function [max_true_positive,min_false_positive ,true_positive, false_positive] = plot_decrease_freq(samples_full, nbr_steps,nposfiles,nnegfiles, attempts,alpha, write_svm_model_to_file,max_freq)
+function [true_positives, false_positives] = plot_decrease_freq(samples_full, nbr_steps,nposfiles,nnegfiles, attempts,alpha, write_svm_model_to_file,max_freq)
 
 nbrfiles = nposfiles + nnegfiles;
 true_positives = zeros(nbr_steps+1,1);
@@ -46,8 +46,8 @@ skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx, index_of_f
 % plot(linspace(max_samples,min_samples,nbr_steps+1),true_positives,'g');
 % hold on;
 % plot(linspace(max_samples,min_samples,nbr_steps+1),1-false_positives,'b');
-xx = [50 100 200];
-xq= linspace(200,50,31);
+xx = [25 50 100 200];
+xq= linspace(200,50,36);
 true_positives_yy = interp1(xx',true_positives',xq);
 false_positives_yy = interp1(xx',false_positives',xq);
 
