@@ -84,6 +84,9 @@ plot_scores_histogram(scores_positive_train, scores_negative_train, scores_posit
 
 end
 
+prescision = true_positive/(true_positive+false_positive);
+recall = true_positive;
+F1_score = 2*(prescision*recall)/(prescision+recall);
 
 %% plot effect of pivot change for test ratio
 [ max_neg, new_ratio_for_pivot_change ] = no_door_left_behind(scores_positive_test ,scores_negative_test  );
