@@ -1,18 +1,20 @@
 %% read samples
 clear, clc, close all
-%
-nbrOfSamples = 64;
+%sampling time in sek
+sampling_time = 1.28;
+%nbrOfSamples = 256;
 
 target_freq = 200;
-[nposfiles1,nnegfiles1,samples1] = parse_acc_files(nbrOfSamples,'acc_data\freq200temp\postemp\acc*' ...
+[nposfiles1,nnegfiles1,samples1] = parse_acc_files(200*sampling_time,'acc_data\freq200temp\postemp\acc*' ...
 , 'acc_data\freq200temp\negtemp\acc*');
 [samples1, ~] = convert_freq(samples1,200,target_freq);
 
 %nposfiles1=0;
 %nnegfiles1=0;
 
-[nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postempAll\acc*' ...
-, 'acc_data\freq400temp\negtemp1-9\acc*');
+% [nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postempAll\acc*' ...
+% , 'acc_data\freq400temp\negtemp1-13\acc*');
+[nposfiles2,nnegfiles2,samples2] = read_samples(400*sampling_time,1,13);
 [samples2, ~] = convert_freq(samples2,400,target_freq);
 
 
@@ -26,9 +28,13 @@ nnegfiles = nnegfiles1+nnegfiles2;
 nbrfiles = nposfiles + nnegfiles;
 
 % update nbr of samples if freq has been converted
-nbrOfSamples = nbrOfSamples *  target_freq / 200;
+nbrOfSamples = target_freq*sampling_time;
 
-
+% for k=1:nbrfiles
+%    samples(:,1,k) = smooth(samples(:,1,k)); 
+%    samples(:,2,k) = smooth(samples(:,2,k)); 
+%    samples(:,3,k) = smooth(samples(:,3,k)); 
+% end
 
 %% compute non-dft values
 
@@ -58,8 +64,8 @@ lag = 30;
 clc, close all
 write_svm_model_to_file = 0;
 plot_score_histogram = 0;
-attempts = 1000;
-alpha = 0.90;
+attempts = 100;
+alpha = 0.9;
 if exist('averageTestRatio')
     averageTestRatioOld = averageTestRatio;
     averageTrainRatioOld = averageTrainRatio;

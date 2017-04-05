@@ -118,6 +118,7 @@ weights(1:nposfiles,1) = 1 / nposfiles;
 weights(nposfiles+1:nposfiles+nnegfiles,1) = 1 / nnegfiles;
 
 SVMModel = fitclinear(trainObservations,trainLabels);
+%result = test_features( featureVector , attempts, alpha, nposfiles, nnegfiles);
 %, 'weights', weights(trainIndex
 %Try and predict values with the calculated SVMModel for both the train and
 %test data.
