@@ -4,6 +4,8 @@ clear, clc, close all
 sampling_time = 1.28;
 %nbrOfSamples = 256;
 
+
+
 target_freq = 200;
 [nposfiles1,nnegfiles1,samples1] = parse_acc_files(200*sampling_time,'acc_data\freq200temp\postemp\acc*' ...
 , 'acc_data\freq200temp\negtemp\acc*');
@@ -128,7 +130,7 @@ plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,
 nbr_steps = 3;
 alpha = 0.9;
 write_svm_model_to_file = 0;
-attempts = 1;
+attempts = 1000;
 
-plot_decrease_freq(samples, nbr_steps,nposfiles,nnegfiles, attempts,alpha, write_svm_model_to_file,200)
+[true_positives, false_positives] = plot_decrease_freq(samples, nbr_steps,nposfiles,nnegfiles, attempts,alpha, write_svm_model_to_file,200)
 
