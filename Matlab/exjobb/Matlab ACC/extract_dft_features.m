@@ -11,9 +11,9 @@ tiltXY = calc_tilt(samples(:,2,:),samples(:,1,:),nbrOfSamples);
 dft_samples = calc_dft(samples,nposfiles,nnegfiles,nbrOfSamples);
 %fix tiltVector
 tiltAsSamp = zeros(nbrOfSamples,3,nposfiles+nnegfiles);
-tiltAsSamp(:,1,:) = tiltXZ;
-tiltAsSamp(:,2,:) = tiltYZ;
-tiltAsSamp(:,3,:) = tiltXY;
+tiltAsSamp(:,1,:) = tiltXY;
+tiltAsSamp(:,2,:) = tiltXZ;
+tiltAsSamp(:,3,:) = tiltYZ;
 dft_tilt = calc_dft(tiltAsSamp,nposfiles,nnegfiles,nbrOfSamples);
 
 [sortedValuesSamplesX,sortIndexSamplesX] = sort(dft_samples(:,1,:),'descend');
@@ -62,7 +62,8 @@ psdx_tilt(2:end-1,:,:) = 2*psdx_tilt(2:end-1,:,:);
 
 %get nbr peaks within 6 db of highest peak
 psdx_nbrPeaks = zeros(3,nbrfiles);
-bin_size = 30;
+%hårdkodat fixa senare
+bin_size = 30 * nbrOfSamples/256;
 deci_threshold = 6;
 psdx_deci = 10*log10(psdx);
 psdx_deci_tilt = 10*log10(psdx_tilt);

@@ -57,6 +57,6 @@ function [] = plot_histos(vector1, vector2, nbr_bins1, nbr_bins2)
     histogram(vector2,nbr_bins2);
     hold on;
     histogram(vector1,nbr_bins1);
-
+    legend('negative samples', 'positive samples');
 end
 
