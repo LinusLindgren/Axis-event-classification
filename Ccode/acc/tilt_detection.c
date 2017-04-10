@@ -18,6 +18,7 @@
 #include <time.h>
 #include "extract_acc_features.h"
 #include "svm.h"
+#include "read_sample.h"
 #ifdef HOST
 #include "checktests/stubs/positioning_stubs.h"
 #include "checktests/stubs/stubbed_dbus.h"
@@ -26,13 +27,13 @@
 #endif
 /****************** CONSTANT AND MACRO SECTION ******************************/
 #define TAMPER_GRACE_PERIOD 200 //milliseconds times UPDATE_INTERVAL_SLOW_IN_MSEC
-#define UPDATE_INTERVAL_IN_MSEC (2.5)
+#define UPDATE_INTERVAL_IN_MSEC (5)
 
 #define ILLEGAL_LATERAL_VALUE -91
 #define ILLEGAL_LONGITUDINAL_VALUE -181
 #define MOVING_AVERAGE_FILTER_LEN 10
 #define NUM_WINDOWS 1
-#define WINDOW_LEN 512
+#define WINDOW_LEN 256
 #define SAMPLES_TO_COLLECT (WINDOW_LEN*NUM_WINDOWS)
 #define NUM_PEAKS 5
 #define NUM_MAIN_PEAKS 2
@@ -45,10 +46,10 @@
 #define ENERGY_NEGATIVE_THRESHOLD 0.25f
 #define POWER_RATIO_THRESHOLD 0.80f
 #define PEAK_RATIO_THRESHOLD 1.25f
-#define NOISE_FILTER_OBSERVATION_COUNT 10 
-#define NOISE_FILTER_PASS_COUNT 6
-//#define UPDATE_INTERVAL_SLOW_IN_MSEC UPDATE_INTERVAL_IN_MSEC*5
-#define UPDATE_INTERVAL_SLOW_IN_MSEC 25
+#define NOISE_FILTER_OBSERVATION_COUNT 5 
+#define NOISE_FILTER_PASS_COUNT 3
+#define UPDATE_INTERVAL_SLOW_IN_MSEC UPDATE_INTERVAL_IN_MSEC*5
+//#define UPDATE_INTERVAL_SLOW_IN_MSEC 25
 
 //#define force_test
 //insert values manually below, e.g. cat data.txt | xargs echo | tr " " ", "
@@ -1018,6 +1019,11 @@ grace_period_active(void)
   }
   if (tilt_user_data->update_counter == TAMPER_GRACE_PERIOD-1) {
     DBG(syslog (LOG_INFO, "Grace is ending, updating startup tilt angle"));
+    device_sample* raw_startup =  pos_lib_get_accelerometer_raw_data ();
+    tilt_user_data->acc_x_at_startup = raw_startup->x;
+    tilt_user_data->acc_y_at_startup = raw_startup->y;
+    tilt_user_data->acc_z_at_startup = raw_startup->z;
+    free(raw_startup);
 #ifndef MONKEY_TESTING
     tilt_user_data->startup_lateral = get_tilt();
     tilt_user_data->startup_longitudinal = get_rotation();
@@ -1149,7 +1155,7 @@ static void* save_samples_to_file(gpointer thread_data){
 	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
 	free(data);
 	DBG(syslog (LOG_INFO, "Data has been saved"));
-	exit(0);
+	//exit(0);
 	return NULL;
 }
 
@@ -1169,6 +1175,7 @@ static void* classify_tampering(gpointer thread_data){
 	int i;
 	
 	//temp for debug, store sample for comparison in matlab
+	
 	char bufferRaw[32]; // The filename buffer.
     	// Put "file" then k then ".txt" in to filename.
     	snprintf(bufferRaw, sizeof(char) * 32, "acc_sample%i", (int)time(NULL));
@@ -1200,6 +1207,13 @@ static void* classify_tampering(gpointer thread_data){
 	if(score > 0)
 	{
 		DBG(syslog (LOG_INFO, "tampering with score %f\n",score));
+		g_mutex_lock(&tilt_user_data->report_mutex);
+		      if (*data->tamper_triggered == TRUE) {
+			DBG(syslog (LOG_INFO, "Multiple tamper events detected in short succession. Dropping this one."));
+		      } else {
+			*data->tamper_triggered = TRUE;
+		      }
+      		g_mutex_unlock(&tilt_user_data->report_mutex);
 		//tilt_trigger_tampering();
 	}else
 	{
@@ -1849,6 +1863,8 @@ tilt_detection_init(void)
   // READ SVM MODEL HERE
   svm_model = read_linear_svm_model("/tmp/svm_params", get_nbr_features());
 
+  
+
   if (posd_get_tilt_detection_params(
       &tilt_user_data->enabled,
       &tilt_user_data->trigger_angle,
@@ -1882,6 +1898,8 @@ tilt_detection_init(void)
   g_timeout_add (UPDATE_INTERVAL_SLOW_IN_MSEC, collect_samples, NULL);
 
   tilt_user_data->initialized = TRUE;
+	//REMOVE AFTER TEST
+	test_calc_time();
 }
 
 /**

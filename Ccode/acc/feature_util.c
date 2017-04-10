@@ -15,42 +15,35 @@
 
 double calc_skewness(double* sample, int sample_size,double mean, double variance)
 {
+
+	double variance_skewness = variance*(sample_size-1) / sample_size;
 	int i;	
 	// (1/n) * sum 1->n with (x-mean)^3
 	double nominator = 0;
-	// (  sqrt(  (1/n) * sum 1->n with (x-mean)^2  )  )^2
-	//double denominator = 0;
 	for(i = 0; i < sample_size; i++)
-	{
-		//nominator+= pow(sample[i] - mean,3); 
+	{ 
 		nominator+= (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean); 
-		//denominator+= pow(sample[i] - mean,2); 
 	}
 	nominator /= sample_size;
-	//denominator /= sample_size;
-	//denominator = sqrt(denominator);
-	double denominator = pow(variance,1.5);
-	return nominator / denominator;
+	double denominator = pow(variance_skewness,1.5);
+	//double denominator_test = variance * sqrt(variance);
+	double res = nominator / denominator;
+	return res;
 	
 }
 
 double calc_kurtosis(double* sample, int sample_size, double mean,double variance)
 {
-	
+	double variance_kurtosis = variance*(sample_size-1) / sample_size;
 	int i;	
 	// (1/n) * sum 1->n with (x-mean)^4
 	double nominator = 0;
-	// ((1/n) * sum 1->n with (x-mean)^2)^2
-	//double denominator = 0;
 	for(i = 0; i < sample_size; i++)
 	{
-		//nominator+= pow(sample[i] - mean,4); 
-		nominator+= (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean);
-		//denominator+= pow(sample[i] - mean,2); 
+		nominator+= (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean) * (sample[i] - mean); 
 	}
 	nominator /= sample_size;
-	//denominator /= sample_size;
-	double denominator = pow(variance,2);
+	double denominator = pow(variance_kurtosis,2);
 	return nominator / denominator;
 }
 
@@ -69,16 +62,11 @@ double calc_variance(double* sample,int sample_size, double sample_mean)
 {
 	int i;
 	double sum = 0;
-	//double sum_temp = 0;
 	for(i = 0; i < sample_size; i++)
 	{	
-		//sum += pow(sample[i]-sample_mean,2);
 		sum += (sample[i]-sample_mean) * (sample[i]-sample_mean);
 		
 	}
-
-	//syslog (LOG_INFO, "sum: %f sumtemp %f \n",sum, sum_temp);
-	
 	//matlab normalizes with n-1
 	return sum / (sample_size-1);
 }
@@ -97,7 +85,7 @@ double calc_min(double* sample, int sample_size)
 	return min;
 }
 
-double calc_max(double* sample, int sample_size)
+double calc_max(double* sample, int* index_of_max_value, int sample_size)
 {
 	int i;
 	double max = DBL_MIN;
@@ -105,7 +93,9 @@ double calc_max(double* sample, int sample_size)
 	{
 		if(sample[i] > max)
 		{
-			max = abs(sample[i]);
+			max = fabs(sample[i]);
+			// +1 due to corresponding matlab index
+			*index_of_max_value = i+1;
 		}	
 	}
 	return max;

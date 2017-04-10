@@ -5,7 +5,7 @@
 	double calc_mean(double* sample,int sample_size);
 	double calc_variance(double* sample,int sample_size, double sample_mean);
 	double calc_min(double* sample, int sample_size);
-	double calc_max(double* sample, int sample_size);
+	double calc_max(double* sample, int* index_of_max_value, int sample_size);
 	double calc_sum(double* sample, int sample_size);
 
 #endif
