@@ -1,4 +1,4 @@
-function [max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples_full, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file,target_freq)
+function [true_positives, false_positives] = plot_decrease_sample_size(samples_full, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file,target_freq)
 
 nbrfiles = nposfiles + nnegfiles;
 step_length = (max_samples-min_samples)/nbr_steps;

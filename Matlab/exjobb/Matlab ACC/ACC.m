@@ -116,11 +116,12 @@ max_samples = 256;
 min_samples = 32;
 nbr_steps = 56;
 lag = 30;
-alpha = 0.9;
+alpha = 1;
 
 write_svm_model_to_file = 0;
 %[max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file);
-plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, 500,alpha, write_svm_model_to_file,target_freq);
+[true_positives_decrease_samples,false_positives_decrease_samples] =  plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, 1,alpha, write_svm_model_to_file,target_freq);
+plot_ROC(true_positives_decrease_samples, false_positives_decrease_samples, 'b--o', 'ROC plot. Decreasing the sampling time from 1.28 to 0.16 (s)');
 %% plot frequency decrease
 nbr_steps = 3;
 alpha = 0.9;
