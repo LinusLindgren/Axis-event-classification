@@ -169,7 +169,6 @@ typedef struct {
   guint samples;
   gboolean tamper_triggered;
   gboolean should_record_samples;
-  //gint *collected_samples;
   device_sample** collected_samples;
   gboolean observing;
   gint pass_count;
@@ -891,7 +890,6 @@ start_save_to_file_thread(void)
   //main loop does not want to join, so set the detached attr:
   pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-  //syslog (LOG_INFO, "Done sampling, starting save to file thread");
   //malloc data struct. The new thread will free it:
   thread_data_type *thread_data = (thread_data_type*)malloc(sizeof(thread_data_type));
   thread_data->report_mutex = &tilt_user_data->report_mutex;
@@ -962,7 +960,6 @@ reset_data_recording(void)
 {
   stop_record_samples();
   if (tilt_user_data->collected_samples != NULL) {
-    //free(tilt_user_data->collected_samples);
     free_collected_samples(tilt_user_data->collected_samples, tilt_user_data->samples);
     tilt_user_data->collected_samples = NULL;
   }
@@ -973,7 +970,6 @@ reset_data_recording(void)
 static void
 save_sample(gint sample)
 {
-  //tilt_user_data->collected_samples[tilt_user_data->samples] = sample;
  tilt_user_data->collected_samples[tilt_user_data->samples] = pos_lib_get_accelerometer_raw_data();
   if (tilt_user_data->observing) {
     if (abs(sample) >= tilt_detection_get_trigger_angle()) {
@@ -1053,10 +1049,6 @@ grace_period_active(void)
 static gboolean
 collect_samples(G_GNUC_UNUSED gpointer data)
 {
-  //printf("asdasd\n");
-  //g_printf("hej\n");
-  //syslog (LOG_DEBUG, "ENTERING COLLECT SAMPLE");
-  //DBG(syslog (LOG_DEBUG, "ENTERING COLLECT SAMPLE"));
   gboolean ret = TRUE;
 #ifdef force_test
   int i;
@@ -1131,16 +1123,22 @@ collect_samples(G_GNUC_UNUSED gpointer data)
   return ret;
 }
 
+/**
+ * save_samples_to_file:
+ * @data: contains the thread_data_type for the thread
+ *
+ * Saves the raw accelerometer values containted in data to a file
+ * with filename acc_sample + timestamp
+ * 
+ */
 static void* save_samples_to_file(gpointer thread_data){
 	DBG(syslog (LOG_INFO, "Starting to save samples to file"));
 		
 	thread_data_type *data = (thread_data_type*)thread_data; 
 	
 	
-	//gint *samples = data->collected_samples;
 	device_sample** samples = data->collected_samples;
 	char buffer[32]; // The filename buffer.
-    	// Put "file" then k then ".txt" in to filename.
     	snprintf(buffer, sizeof(char) * 32, "acc_sample%i", (int)time(NULL));
 	FILE* filename = g_fopen (buffer,"w");
 	g_fprintf(filename,"startup(x,y,z):(%d,%d,%d)\n",data->acc_x_at_startup, data->acc_y_at_startup, data->acc_z_at_startup);
@@ -1151,43 +1149,34 @@ static void* save_samples_to_file(gpointer thread_data){
 	}
 	fclose(filename);
 	
-	//free(data->collected_samples);
 	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
 	free(data);
 	DBG(syslog (LOG_INFO, "Data has been saved"));
-	//exit(0);
 	return NULL;
 }
 
 
-
+// The steps in the classification for detecting break ins
+// 1. When a disturbance is detected, the tilt data from the accelerometer
+//    is collected for a duration of length (NUM_WINDOWS * WINDOW_LEN) ms.
+//
+// 2. All values are transformed so that the starting values are (0,0,0).
+//
+// 3. The predetermined features are extracted from the sample
+//
+// 4. The extracted features are used together with the svm model (found in the file svm_params)
+//    to calculate the classifying score. This is done using linear struct vector machine
+// 
+// 5. If the resulting score is greater than zero then the sample is classified as a break in
 static void* classify_tampering(gpointer thread_data){
 	clock_t t1, t2;
-	 
 	DBG(syslog (LOG_INFO, "Starting tampering classification"));
-	
-	
 	thread_data_type *data = (thread_data_type*)thread_data; 
-	
-	
-	//gint *samples = data->collected_samples;
 	device_sample** samples = data->collected_samples;
 	int i;
 	
-	//temp for debug, store sample for comparison in matlab
+
 	
-	char bufferRaw[32]; // The filename buffer.
-    	// Put "file" then k then ".txt" in to filename.
-    	snprintf(bufferRaw, sizeof(char) * 32, "acc_sample%i", (int)time(NULL));
-	FILE* filename = g_fopen (bufferRaw,"w");
-	g_fprintf(filename,"startup(x,y,z):(%d,%d,%d)\n",data->acc_x_at_startup, data->acc_y_at_startup, data->acc_z_at_startup);
-	for(i=0;i<SAMPLES_TO_COLLECT; i++){
-		g_fprintf(filename,"%d %d %d\n",samples[i]->x, samples[i]->y,samples[i]->z);
-	
-	}
-	fclose(filename);
-	
-	//onödigt ? kolla senare
 	double* sample_z = malloc(sizeof(double)*SAMPLES_TO_COLLECT);
 	double* sample_x = malloc(sizeof(double)*SAMPLES_TO_COLLECT);
 	double* sample_y = malloc(sizeof(double)*SAMPLES_TO_COLLECT);	
@@ -1214,21 +1203,18 @@ static void* classify_tampering(gpointer thread_data){
 			*data->tamper_triggered = TRUE;
 		      }
       		g_mutex_unlock(&tilt_user_data->report_mutex);
-		//tilt_trigger_tampering();
 	}else
 	{
 		DBG(syslog (LOG_INFO, "not tampering with score %f\n",score));
 	}
-	//free all	
 	
-
+	//free all	
 	free(features);
 	free_collected_samples(data->collected_samples, SAMPLES_TO_COLLECT);	
 	free(data);
 	free(sample_x);
 	free(sample_y);
 	free(sample_z);
-	//exit(0);
 	return NULL;
 }
 
@@ -1898,8 +1884,6 @@ tilt_detection_init(void)
   g_timeout_add (UPDATE_INTERVAL_SLOW_IN_MSEC, collect_samples, NULL);
 
   tilt_user_data->initialized = TRUE;
-	//REMOVE AFTER TEST
-	test_calc_time();
 }
 
 /**
@@ -2053,7 +2037,6 @@ tilt_detection_set_sensitivity(const guint sensitivity)
 
   return TRUE;
 }
-
 /**
  * tilt_detection_trigger_event:
  *

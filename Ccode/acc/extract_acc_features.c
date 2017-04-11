@@ -20,6 +20,17 @@
 #define NBR_FEATURES 41
 #define MATH_PI 3.14159265358979323846
 
+
+/**
+ * calc_tilt:
+ * @sample_A: An array containing the Y values
+ * @sample_B: An array containing the X values
+ * @size the length of the arrays
+ * calculates the pairwise tilt values of the arrays
+ * with filename acc_sample + timestamp
+ * 
+ * Returns: an array containing the calcuated tilt values
+ */
 static double* calc_tilt(double* sample_A, double* sample_B, int size)
 {
 	double* tilt_values = malloc(size*sizeof(double));
@@ -31,7 +42,14 @@ static double* calc_tilt(double* sample_A, double* sample_B, int size)
 	return tilt_values;
 }	
 
-
+/**
+ * calc_sum_changes:
+ * @sample_A: An array containing the sample values
+ * @sample_size the length of the array
+ * calculates the sum of all changes between neighbouring data points
+ * 
+ * Returns: the calculated sum
+ */
 static double calc_sum_changes(double* sample, int sample_size)
 {
 	//syslog (LOG_INFO,"ENTER SUM CHANGES\n");
@@ -39,7 +57,6 @@ static double calc_sum_changes(double* sample, int sample_size)
 	double sum = 0;
 	for(i = 1; i < sample_size; i++)
 	{
-		//syslog (LOG_INFO,"sum: %f\n for %f %f abs: %f",sum, sample[i], sample[i-1], fabs(sample[i]-sample[i-1]));
 		sum += fabs(sample[i]-sample[i-1]);
 	}
 	return sum;
@@ -95,7 +112,6 @@ void calc_acf(double* samples, int sample_size, double mean, double variance,dou
  *     note that X(k)*Y(k+0) == X(k+0)*Y(k)
  *          
  */
-//varför skickar vi med std? kolla
 void calc_xcf(double* samplesX,double* samplesY, int sample_size, double stdX, double stdY,double* xcf)
 {
 
@@ -131,11 +147,11 @@ int get_nbr_features(void)
  * @sampleX: The X dimension part of the signal.
  * @sampleY: The Y dimension part of the signal. 
  * @sampleZ: The Z dimension part of the signal.
- * @sample_size: the length of the sample.
+ * @sample_size: The length of the sample.
+ * @svm_model The support vector machine model used for the classification.
+ * @sample_freq The frequency that the sample was recorded with.
  *
- * Returns: the features extracted from the signal. Stored as follows:
- * [sum of acf in each respective dimension, minimum of acf in each respective dimension, the max of the absolute value crosscorrelation between X & Y,
-the max of the absolute value crosscorrelation between X & Z, the max of the absolute value crosscorrelation between Y & Z]         
+ * Returns: the features extracted from the signal.    
  */
 
 
@@ -188,6 +204,8 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	psdx_feature_data_type* psdx_raw[3];
 	psdx_feature_data_type* psdx_tilt[3];
 
+	
+
 
 	psdx_raw[0] = extract_psdx_features(sampleX, sample_size,sample_freq);
 	psdx_raw[1] = extract_psdx_features(sampleY, sample_size,sample_freq);
@@ -195,7 +213,8 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	psdx_tilt[0] = extract_psdx_features(tiltXY, sample_size,sample_freq);
 	psdx_tilt[1] = extract_psdx_features(tiltXZ, sample_size,sample_freq);
 	psdx_tilt[2] = extract_psdx_features(tiltYZ, sample_size,sample_freq);
-	
+
+
 	//add the features in the predefined order
 	//enter acf sum features
 	features[0] = acf_z_sum;
@@ -230,18 +249,11 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	{
 		features[19+i]= psdx_tilt[2]->psdx_freq_bins[i];
 	}
-	//calc skewness for psdx
-	double psdx_x_mean = calc_mean(psdx_raw[0]->psdx,psdx_raw[0]->size);
-	double psdx_x_variance = calc_variance(psdx_raw[0]->psdx,psdx_raw[0]->size,psdx_x_mean);
-	features[24] = calc_skewness(psdx_raw[0]->psdx,psdx_raw[0]->size,psdx_x_mean,psdx_x_variance);
 
-	double psdx_y_mean = calc_mean(psdx_raw[1]->psdx,psdx_raw[1]->size);
-	double psdx_y_variance = calc_variance(psdx_raw[1]->psdx,psdx_raw[1]->size,psdx_y_mean);
-	features[25] = calc_skewness(psdx_raw[1]->psdx,psdx_raw[1]->size,psdx_y_mean,psdx_y_variance);
 
-	double psdx_z_mean = calc_mean(psdx_raw[2]->psdx,psdx_raw[2]->size);
-	double psdx_z_variance = calc_variance(psdx_raw[2]->psdx,psdx_raw[2]->size,psdx_z_mean);
-	features[26] = calc_skewness(psdx_raw[2]->psdx,psdx_raw[2]->size,psdx_z_mean,psdx_z_variance);
+	features[24] = psdx_raw[0]->skewness;
+	features[25] = psdx_raw[1]->skewness;
+	features[26] = psdx_raw[2]->skewness;
 
 	//add nbr peaks for psdx tilt
 	features[27] = psdx_tilt[0]->nbr_freq_peaks;
@@ -270,7 +282,7 @@ double* extract_features(double* sampleX,double* sampleY, double* sampleZ,int sa
 	
 	for(i = 0; i< NBR_FEATURES ; i++)
 	{
-		syslog (LOG_INFO,"feature[%d]: %f\n",i,features[i]);
+		//syslog (LOG_INFO,"feature[%d]: %f\n",i,features[i]);
 		features[i] = (features[i]-svm_model->features_mean[i]) / svm_model->features_std[i];
 		if(isnan(features[i]))
 		{

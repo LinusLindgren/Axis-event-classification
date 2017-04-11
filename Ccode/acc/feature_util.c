@@ -88,12 +88,13 @@ double calc_min(double* sample, int sample_size)
 double calc_max(double* sample, int* index_of_max_value, int sample_size)
 {
 	int i;
-	double max = DBL_MIN;
+	double max = -DBL_MAX;
+	
 	for(i = 0; i < sample_size; i++)
 	{
 		if(sample[i] > max)
 		{
-			max = fabs(sample[i]);
+			max = sample[i];
 			// +1 due to corresponding matlab index
 			*index_of_max_value = i+1;
 		}	

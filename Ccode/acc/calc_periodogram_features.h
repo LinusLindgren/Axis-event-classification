@@ -6,6 +6,7 @@
 		int* psdx_freq_bins;
 		double* psdx;
 		int size;
+		double skewness;
 	}psdx_feature_data_type;
 	psdx_feature_data_type* extract_psdx_features(double* sample, int sample_size,int sample_freq);
 	void free_psdx_feature_data_type(psdx_feature_data_type* data);
