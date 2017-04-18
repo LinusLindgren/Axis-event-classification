@@ -8,16 +8,17 @@ clear all; close all; clc
 
 % Parameters.
 
-action = "classify";                       % "train" OR  "classify"
+action = "train";                       % "train" OR  "classify"
 L = 10;                                    % moving average filter length
 T = 128;                                   % Length of the data sequence
-NFFT = 2048;                               % number of FFT points (should be a power of 2)
+NFFT = 128;                               % number of FFT points (should be a power of 2)
 NPEAKSMAX = 4;                             % max. number of peaks to consider
 PTHRESH = 3;                               % Tp, if power < Tp => Noise. 
 fs = 200;                                  % Hz, sampling frequency
-dirname = 't3/';                           % Folder name for the train/classify data set.
-training_set = '[0-9]*.txt';               % training set
-test_set = '[0-9]*.txt';                   % test (classification) set.
+%dirname = 't3/';
+dirname = 'samples/';                          % Folder name for the train/classify data set.
+training_set = 'train/acc*';               % training set
+test_set = 'test/acc*';                   % test (classification) set.
 
 if (strcmpi(action, "train") == 1)
   %
@@ -28,7 +29,7 @@ if (strcmpi(action, "train") == 1)
   printf("\nNumber of training data sets: %d\n", N);
   idx=0;
   for ii = 1:N
-    filename = [dirname,filenames(ii).name];
+    filename = [dirname, 'train/', filenames(ii).name];
     % read the raw tilt values
     raw_tilt = read_tilt_data_from_file(filename);
 
