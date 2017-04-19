@@ -35,7 +35,13 @@ featureMatrix = featureMatrix ./ repmat(std_train,size(featureMatrix,1),1);
 label = zeros(nposfilestest+nnegfilestest,1);
 label(1:nposfilestest,1) = 1;
 
+%Labels are the actual labels, pred_labels are the predictions made by the
+%SVM model on the testset. Thus 
+%pred_labels - label == 0 are correct predictions.
+%pred_labels - label == 1. Are negatives that have been classified as pos
+% pred_labels - label == -1. Are positives that have been classified as neg
 res_test = pred_labels_test_set - label;
+%size(label,1)-sum(label) = The amounts of negatives in the set.
 false_positive_test = length(res_test(res_test(:)==1))/(size(label,1)-sum(label));
 true_positive_test = 1 - length(res_test(res_test(:)==-1))/sum(label);
 end
