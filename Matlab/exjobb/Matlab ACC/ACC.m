@@ -66,7 +66,7 @@ lag = 30;
 clc, close all
 write_svm_model_to_file = 0;
 plot_score_histogram = 0;
-attempts = 100;
+attempts = 1000;
 alpha = 0.9;
 if exist('averageTestRatio')
     averageTestRatioOld = averageTestRatio;
