@@ -16,7 +16,7 @@ target_freq = 200;
 
 % [nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postempAll\acc*' ...
 % , 'acc_data\freq400temp\negtemp1-13\acc*');
-[nposfiles2,nnegfiles2,samples2] = read_samples(400*sampling_time,1,13);
+[nposfiles2,nnegfiles2,samples2] = read_samples(400*sampling_time,1,1);
 [samples2, ~] = convert_freq(samples2,400,target_freq);
 
 
@@ -66,7 +66,7 @@ lag = 30;
 clc, close all
 write_svm_model_to_file = 0;
 plot_score_histogram = 0;
-attempts = 100;
+attempts = 1000;
 alpha = 0.9;
 if exist('averageTestRatio')
     averageTestRatioOld = averageTestRatio;
@@ -76,7 +76,7 @@ end
 
 
 [averageTestRatio, averageTrainRatio, true_positive, false_positive, countMissclassifications,SVMModel, featureVector, ...
-    scores_positive_train, scores_negative_train, scores_positive_test, scores_negative_test, mean_train, std_train] ...
+    scores_positive_train, scores_negative_train, scores_positive_test, scores_negative_test, mean_train, std_train, SVMModels] ...
 = train_and_test_scm_model(attempts, alpha, nposfiles,nnegfiles, sum_auto, min_auto, cross_corr_max,auto_corr_flat ...
 ,auto_bins,meanFeatures, meanTiltFeatures, stdFeatures, stdTiltFeatures,sumFeatures,minFeatures,maxFeatures, ...
 maxTiltFeatures,minTiltFeatures, skewness_samples, kurtosis_samples, sum_changes, mean_changes, ...
@@ -104,6 +104,11 @@ plot(new_ratio_for_pivot_change(:,1),new_ratio_for_pivot_change(:,3),'g');
 
 %% test svmmodel with test set
 [ false_positive_test, true_positive_test, res] = test_model( SVMModel, nbrOfSamples,target_freq, mean_train, std_train );
+
+%% test svmmodel with 1000 svmmodels for all doors
+start_door = 1;
+end_door = 14; %Door number 14 is all negatives
+[ false_positives_test, true_positives_test, res] = test_all_doors( SVMModels, nbrOfSamples ,target_freq,mean_train, std_train, attempts, start_door, end_door);
 
 %% plot feature clustering
 
