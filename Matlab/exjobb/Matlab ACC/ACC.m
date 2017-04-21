@@ -16,7 +16,7 @@ target_freq = 200;
 
 % [nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postempAll\acc*' ...
 % , 'acc_data\freq400temp\negtemp1-13\acc*');
-[nposfiles2,nnegfiles2,samples2] = read_samples(400*sampling_time,1,1);
+[nposfiles2,nnegfiles2,samples2] = read_samples(400*sampling_time,1,13);
 [samples2, ~] = convert_freq(samples2,400,target_freq);
 
 
@@ -96,12 +96,18 @@ prescision = true_positive/(true_positive+false_positive);
 recall = true_positive;
 F1_score = 2*(prescision*recall)/(prescision+recall);
 
-%% plot effect of pivot change for test ratio
-[ max_neg, new_ratio_for_pivot_change ] = no_door_left_behind(scores_positive_test ,scores_negative_test  );
-plot(new_ratio_for_pivot_change(:,1),new_ratio_for_pivot_change(:,2),'r');
+%% plot effect of pivot change for test ratio, in favor of negative
+[ max_neg, new_ratio_for_pivot_change_neg,min_pos, new_ratio_for_pivot_change_pos ] = no_door_left_behind(scores_positive_test ,scores_negative_test  );
+%new_ratio_for_pivot_change_pos = flipud(new_ratio_for_pivot_change_pos);
+combined =  cat(1, new_ratio_for_pivot_change_neg, new_ratio_for_pivot_change_pos);
+combined = combined(2:size(combined,1),:);
+combined = sortrows(combined, 1);
+plot(combined(:,1),combined(:,2),'r');
 hold on
-plot(new_ratio_for_pivot_change(:,1),new_ratio_for_pivot_change(:,3),'g');
+plot(combined(:,1),combined(:,3),'b');
 
+legend('True positive', 'True negative');
+title('Accuracy after moving pivot');
 %% test svmmodel with test set
 [ false_positive_test, true_positive_test, res] = test_model( SVMModel, nbrOfSamples,target_freq, mean_train, std_train );
 
