@@ -53,7 +53,9 @@ sum_changes'  squeeze(psdx_peak_freq_bin_tilt([1],1,:)) squeeze(psdx_peak_freq_b
 skewness_psdx psdx_nbrPeaks_tilt' ...
 squeeze(psdx_peak_freq_bin([1 3 4 5],1,:))' squeeze(psdx_peak_freq_bin([1 5],2,:))' ...
 index_of_first_max(3,:)' meanTiltFeatures(2,:)'  stdFeatures(2,:)' ...
-sum_changes_auto(1:2,:)' ];
+sum_changes_auto(1:2,:)' sum_changes_auto(1:2,:)' ];
+
+%featureVector = featureVector(:,[5 8 17 39 1 27 ]);
 
 %resultasd = test_features(featureVector,100, alpha, nposfiles, nnegfiles);
 %Markers
@@ -120,6 +122,7 @@ weights(nposfiles+1:nposfiles+nnegfiles,1) = 1 / nnegfiles;
 % SVMModel = fitcknn(trainObservations,trainLabels,'NumNeighbors',15,'Standardize',1, 'Cost', Cost);
 %SVMModel = fitctree(trainObservations,trainLabels);
 SVMModel = fitclinear(trainObservations,trainLabels);
+%SVMModel = fitcsvm(trainObservations,trainLabels, 'kernelFunction', 'polynomial');
 SVMModels{i} = SVMModel;
 %result = test_features( featureVector , attempts, alpha, nposfiles, nnegfiles);
 %, 'weights', weights(trainIndex

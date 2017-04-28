@@ -46,18 +46,23 @@ skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx, index_of_f
 % plot(linspace(max_samples,min_samples,nbr_steps+1),true_positives,'g');
 % hold on;
 % plot(linspace(max_samples,min_samples,nbr_steps+1),1-false_positives,'b');
-xx = [25 50 100 200];
-xq= linspace(200,50,36);
-true_positives_yy = interp1(xx',true_positives',xq);
-false_positives_yy = interp1(xx',false_positives',xq);
+% 
+% xx = [25 50 100 200];
+% xq= linspace(200,50,36);
+% true_positives_yy = interp1(xx',true_positives',xq);
+% false_positives_yy = interp1(xx',false_positives',xq);
+% 
+% fit_true_positives = fit(xq',true_positives_yy','smoothingspline');
+% fit_false_positives = fit(xq',1-false_positives_yy','smoothingspline');
+% figure
+% plot(fit_true_positives,'b',xx',true_positives','.r');
+% hold on
+% plot(fit_false_positives,'r',xx',1-false_positives','.b');
+% legend('Fitted curve true positive ratio','True positive data points', 'Fitted curve true negative ratio', 'True negative data points');
+% 
 
-fit_true_positives = fit(xq',true_positives_yy','smoothingspline');
-fit_false_positives = fit(xq',1-false_positives_yy','smoothingspline');
-figure
-plot(fit_true_positives,'b',xx',true_positives','.r');
-hold on
-plot(fit_false_positives,'r',xx',1-false_positives','.b');
-legend('Fitted curve true positive ratio','True positive data points', 'Fitted curve true negative ratio', 'True negative data points');
+
+
 % [X,Y] = meshgrid(linspace(max_samples,min_samples,nbr_steps+1), start_lag:end_lag);
 % figure
 % mesh(X,Y,true_positives);
