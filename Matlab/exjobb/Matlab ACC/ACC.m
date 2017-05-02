@@ -74,7 +74,7 @@ clc, close all
 write_svm_model_to_file = 0;
 plot_score_histogram = 0;
 attempts = 1000;
-alpha = 0.9;
+alpha = 0.90;
 if exist('averageTestRatio')
     averageTestRatioOld = averageTestRatio;
     averageTrainRatioOld = averageTrainRatio;

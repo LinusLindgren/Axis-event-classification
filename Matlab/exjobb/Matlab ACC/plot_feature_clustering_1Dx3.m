@@ -10,7 +10,7 @@ function [ ] = plot_feature_clustering_1Dx3( vector1,vector2, vector3,nposfiles,
     histogram(vector1(nposfiles+1:nposfiles+nnegfiles),nbr_bins_neg);
     hold on;
     histogram(vector1(1:nposfiles), nbr_bins_pos);
-    title('Kurtosis in x-axis raw Data');
+    title('Maximum in y-axis raw Data');
     legend('non-tampering','tampering');
 
     subplot(3,1,2);
@@ -19,7 +19,7 @@ function [ ] = plot_feature_clustering_1Dx3( vector1,vector2, vector3,nposfiles,
     histogram(vector2(nposfiles+1:nposfiles+nnegfiles),nbr_bins_neg);
     hold on;
     histogram(vector2(1:nposfiles), nbr_bins_pos);
-    title('Kurtosis in y-axis raw Data');
+    title('Sum of autocorrelation in z-axis raw Data');
     legend('non-tampering','tampering');
     
     subplot(3,1,3);
@@ -28,7 +28,7 @@ function [ ] = plot_feature_clustering_1Dx3( vector1,vector2, vector3,nposfiles,
     histogram(vector3(nposfiles+1:nposfiles+nnegfiles),nbr_bins_neg);
     hold on;
     histogram(vector3(1:nposfiles), nbr_bins_pos);
-    title('Kurtosis in z-axis raw Data');
+    title('Maximum in x-axis raw Data');
     legend('non-tampering','tampering');
 
 end

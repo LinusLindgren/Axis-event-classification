@@ -27,7 +27,7 @@ scores_negative_test_total = [];
 for i=1:attempts 
 label = zeros(nposfiles+nnegfiles,1);
 label(1:nposfiles,1) = 1;
-trainIndex = randperm(nposfiles+nnegfiles,floor(alpha*nposfiles+nnegfiles)); 
+trainIndex = randperm(nposfiles+nnegfiles,floor(alpha*(nposfiles+nnegfiles))); 
 
 index= linspace(1,nposfiles+nnegfiles,nposfiles+nnegfiles);
 testIndex = setdiff(index,trainIndex);
@@ -53,7 +53,9 @@ sum_changes'  squeeze(psdx_peak_freq_bin_tilt([1],1,:)) squeeze(psdx_peak_freq_b
 skewness_psdx psdx_nbrPeaks_tilt' ...
 squeeze(psdx_peak_freq_bin([1 3 4 5],1,:))' squeeze(psdx_peak_freq_bin([1 5],2,:))' ...
 index_of_first_max(3,:)' meanTiltFeatures(2,:)'  stdFeatures(2,:)' ...
-sum_changes_auto(1:2,:)' sum_changes_auto(1:2,:)' ];
+sum_changes_auto(1:2,:)' ];
+
+%featureVector = featureVector(:,[8,1,7,21]);
 
 %featureVector = featureVector(:,[5 8 17 39 1 27 ]);
 
