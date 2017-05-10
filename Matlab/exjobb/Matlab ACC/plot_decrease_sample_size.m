@@ -45,15 +45,20 @@ skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx, index_of_f
 % hold on;
 % plot(linspace(max_samples,min_samples,nbr_steps+1),1-false_positives,'b');
 x = linspace(max_samples,min_samples, nbr_steps+1);
+x = x / target_freq;
 % vq128ft = interp1(x',true_positive',xq);
 % vq128ff = interp1(x',false_positive',xq);
 
 fit_true_positive = fit(x',true_positives,'smoothingspline');
 fit_false_positive = fit(x',1-false_positives,'smoothingspline');
 figure
-plot(fit_true_positive,'r',x',true_positives','.r');
+h = plot(fit_true_positive,'r',x',true_positives','.r');
+%set(h,{'LineWidth', 'MarkerSize','Marker'},{2,3,'x';2,3,'x'});
+set(h,'LineWidth',1,'Marker','o','MarkerSize',2,'MarkerEdgeColor','g');
 hold on
-plot(fit_false_positive,'b',x',1-false_positives','.b');
+h = plot(fit_false_positive,'b',x',1-false_positives','.b');
+%set (h, 'LineWidth', 3,'MarkerSize',4);
+set(h,'LineWidth',1,'Marker','o','MarkerSize',2,'MarkerEdgeColor','g');
 legend('True positive datapoints','True positive fitted curve','True negative datapoints','True positive fitted curve');
 % [X,Y] = meshgrid(linspace(max_samples,min_samples,nbr_steps+1), start_lag:end_lag);
 % figure

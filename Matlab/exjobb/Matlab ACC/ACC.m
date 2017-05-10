@@ -63,8 +63,6 @@ lag = 30;
    der_max_auto_corr ,der_min_auto_corr, der_sum_auto_corr,max_changes_auto, max_changes_index_auto] = extract_corr_features(samples,nposfiles,nnegfiles,lag, nbrfiles);
 
 
-
-
 %% perform training and testing
 clc, close all
 
@@ -127,9 +125,9 @@ end_door = 14; %Door number 14 is all negatives
 
 [sortedBeta,sortingIndices] = sort(abs(SVMModel.Beta),'descend');
 %plot_feature_clustering_1Dx3(psdx_max(1,:),psdx_max(2,:),psdx_max(3,:), nposfiles,nnegfiles);
-plot_feature_clustering_1Dx3(featureVector(:,sortingIndices(1)),featureVector(:,sortingIndices(2)),featureVector(:,sortingIndices(3)), nposfiles,nnegfiles);
-%plot_feature_clustering_2D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',nposfiles,nnegfiles);
-plot_feature_clustering_3D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',featureVector(:,sortingIndices(3))',nposfiles,nnegfiles);
+%plot_feature_clustering_1Dx3(featureVector(:,sortingIndices(1)),featureVector(:,sortingIndices(2)),featureVector(:,sortingIndices(3)), nposfiles,nnegfiles);
+plot_feature_clustering_2D(featureVector(:,1)', featureVector(:,8)',nposfiles,nnegfiles);
+%plot_feature_clustering_3D(featureVector(:,sortingIndices(1))', featureVector(:,sortingIndices(2))',featureVector(:,sortingIndices(3))',nposfiles,nnegfiles);
 
 %% plot train and testing ratio over alpha
 max_alpha = 1.00;
@@ -142,14 +140,15 @@ max_samples = 256;
 min_samples = 32;
 %min_samples = 254;
 nbr_steps = 56;
+nbr_steps = 2;
 %nbr_steps = 1;
 lag = 30;
 alpha = 0.9;
 
 write_svm_model_to_file = 0;
 %[max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file);
-[true_positives_decrease_samples,false_positives_decrease_samples] =  plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, 500,alpha, write_svm_model_to_file,target_freq);
-plot_ROC(true_positives_decrease_samples, false_positives_decrease_samples, 'b--o', 'ROC plot. Decreasing the sampling time from 1.28 to 0.16 (s)');
+[true_positives_decrease_samples,false_positives_decrease_samples] =  plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, 1,alpha, write_svm_model_to_file,target_freq);
+%plot_ROC(true_positives_decrease_samples, false_positives_decrease_samples, 'b--o', 'ROC plot. Decreasing the sampling time from 1.28 to 0.16 (s)');
 %% plot frequency decrease
 nbr_steps = 4;
 alpha = 0.9;
