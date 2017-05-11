@@ -41,24 +41,27 @@ skewness_psdx, skewness_tilt_psdx ,kurtosis_psdx, kurtosis_tilt_psdx, index_of_f
 
     end
 
-% plot(linspace(max_samples,min_samples,nbr_steps+1),true_positives,'g');
-% hold on;
-% plot(linspace(max_samples,min_samples,nbr_steps+1),1-false_positives,'b');
-x = linspace(max_samples,min_samples, nbr_steps+1);
-x = x / target_freq;
+plot(linspace(max_samples,min_samples,nbr_steps+1)/target_freq,true_positives,'r--o');
+hold on;
+plot(linspace(max_samples,min_samples,nbr_steps+1)/target_freq,1-false_positives,'b--o');
+limits = [0 1.5 0.95 1];
+axis(limits);
+
+%x = linspace(max_samples,min_samples, nbr_steps+1);
+%x = x / target_freq;
 % vq128ft = interp1(x',true_positive',xq);
 % vq128ff = interp1(x',false_positive',xq);
 
-fit_true_positive = fit(x',true_positives,'smoothingspline');
-fit_false_positive = fit(x',1-false_positives,'smoothingspline');
-figure
+% fit_true_positive = fit(x',true_positives,'smoothingspline');
+% fit_false_positive = fit(x',1-false_positives,'smoothingspline');
+% figure
 h = plot(fit_true_positive,'r',x',true_positives','.r');
 %set(h,{'LineWidth', 'MarkerSize','Marker'},{2,3,'x';2,3,'x'});
-set(h,'LineWidth',1,'Marker','o','MarkerSize',2,'MarkerEdgeColor','g');
-hold on
-h = plot(fit_false_positive,'b',x',1-false_positives','.b');
+%set(h,'LineWidth',1,'Marker','o','MarkerSize',2);
+% hold on
+% h = plot(fit_false_positive,'b',x',1-false_positives','.b');
 %set (h, 'LineWidth', 3,'MarkerSize',4);
-set(h,'LineWidth',1,'Marker','o','MarkerSize',2,'MarkerEdgeColor','g');
+%set(h,'LineWidth',1,'Marker','o','MarkerSize',2);
 legend('True positive datapoints','True positive fitted curve','True negative datapoints','True positive fitted curve');
 % [X,Y] = meshgrid(linspace(max_samples,min_samples,nbr_steps+1), start_lag:end_lag);
 % figure
