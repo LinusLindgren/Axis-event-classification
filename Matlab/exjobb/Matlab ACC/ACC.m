@@ -155,4 +155,15 @@ write_svm_model_to_file = 0;
 attempts = 100;
 
 [true_positives, false_positives] = plot_decrease_freq(samples, nbr_steps,nposfiles,nnegfiles, attempts,alpha, write_svm_model_to_file,400)
-
+%% Plot raw data
+close all;
+x = (1:256)/200;
+samplestemp = samples/16384;
+figure;
+plot(x,samplestemp(:,2,898), 'b', 'Linewidth', 1.5)
+hold on
+plot(x,samplestemp(:,2,65), 'r', 'Linewidth', 1.5)
+xlabel('Time(s)',  'FontSize', 14);
+ylabel('Acceleration (g)',  'FontSize', 10);
+set(gca,'fontsize',15)
+legend('Negative observation', 'Positive observation');
