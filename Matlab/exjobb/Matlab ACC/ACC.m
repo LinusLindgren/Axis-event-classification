@@ -10,7 +10,6 @@ sampling_time = 1.28;
  [nposfiles1,nnegfiles1,samples1] = parse_acc_files(200*sampling_time,'acc_data\freq200temp\postemp\acc*' ...
  , 'acc_data\freq200temp\negtemp\acc*');
  [samples1, ~] = convert_freq(samples1,200,target_freq);
-
 %nposfiles1=0;
 %nnegfiles1=0;
 
