@@ -1,20 +1,14 @@
 %% read samples
 clear, clc, close all
-%sampling time in sek
 sampling_time = 1.28;
-%nbrOfSamples = 256;
-
-
-
- target_freq = 200;
- [nposfiles1,nnegfiles1,samples1] = parse_acc_files(200*sampling_time,'acc_data\freq200temp\postemp\acc*' ...
+target_freq = 200;
+ 
+%read samples with sampling frequency 200 Hz
+[nposfiles1,nnegfiles1,samples1] = parse_acc_files(200*sampling_time,'acc_data\freq200temp\postemp\acc*' ...
  , 'acc_data\freq200temp\negtemp\acc*');
  [samples1, ~] = convert_freq(samples1,200,target_freq);
-%nposfiles1=0;
-%nnegfiles1=0;
-
-% [nposfiles2,nnegfiles2,samples2] = parse_acc_files(nbrOfSamples * 2,'acc_data\freq400temp\postempAll\acc*' ...
-% , 'acc_data\freq400temp\negtemp1-13\acc*');
+ 
+ %read samples with sampling frequency 499 Hz from door 1-13
 [nposfiles2,nnegfiles2,samples2] = read_samples(400*sampling_time,1,13);
 [samples2, ~] = convert_freq(samples2,400,target_freq);
 
@@ -23,24 +17,15 @@ sampling_time = 1.28;
 nbrfiles1 = nposfiles1 + nnegfiles1; 
 nbrfiles2 = nposfiles2 + nnegfiles2;
 samples = cat(3,samples1(:,:,1:nposfiles1), samples2(:,:,1:nposfiles2), samples1(:,:, nposfiles1+1:nbrfiles1), samples2(:,:,nposfiles2+1:nbrfiles2));
-%samples = samples2;
 nposfiles = nposfiles1+nposfiles2;
 nnegfiles = nnegfiles1+nnegfiles2;
-%nposfiles = nposfiles2;
-%nnegfiles = nnegfiles2;
-
 nbrfiles = nposfiles + nnegfiles;
 
 % update nbr of samples if freq has been converted
 nbrOfSamples = target_freq*sampling_time;
 
-% for k=1:nbrfiles
-%    samples(:,1,k) = smooth(samples(:,1,k)); 
-%    samples(:,2,k) = smooth(samples(:,2,k)); 
-%    samples(:,3,k) = smooth(samples(:,3,k)); 
-% end
 
-%% compute non-dft values
+%% compute core values
 
 [meanFeatures, maxFeatures, minFeatures, kurtosis_samples, skewness_samples, sumFeatures, ...
     meanTiltFeatures, stdFeatures, stdTiltFeatures, sumAllDimFeatures, maxTiltFeatures, ...
@@ -64,9 +49,6 @@ lag = 30;
 
 %% perform training and testing
 clc, close all
-
-%test
-%skewness_samples = abs(skewness_samples);
 
 write_svm_model_to_file = 0;
 plot_score_histogram = 0;
@@ -102,7 +84,6 @@ F1_score = 2*(prescision*recall)/(prescision+recall);
 
 %% plot effect of pivot change for test ratio
 [ max_neg, new_ratio_for_pivot_change_neg,min_pos, new_ratio_for_pivot_change_pos ] = no_door_left_behind(scores_positive_test ,scores_negative_test  );
-%new_ratio_for_pivot_change_pos = flipud(new_ratio_for_pivot_change_pos);
 combined =  cat(1, new_ratio_for_pivot_change_neg, new_ratio_for_pivot_change_pos);
 combined = combined(2:size(combined,1),:);
 combined = sortrows(combined, 1);
@@ -147,16 +128,12 @@ title('False positive and True positive accuracy as features are added');
 %% Plot decrease
 max_samples = 256;
 min_samples = 32;
-%min_samples = 254;
 nbr_steps = 56;
-%nbr_steps = 1;
 lag = 30;
 alpha = 0.9;
 
 write_svm_model_to_file = 0;
-%[max_true_positive,min_false_positive ,lag_index_true_positive, lag_index_false_positive , corresponding_false_positive, corresponding_true_positive] = plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, attempts,alpha, write_svm_model_to_file);
 [true_positives_decrease_samples,false_positives_decrease_samples] =  plot_decrease_sample_size(samples, max_samples,min_samples, nbr_steps,nposfiles,nnegfiles,lag, 500,alpha, write_svm_model_to_file,target_freq);
-%plot_ROC(true_positives_decrease_samples, false_positives_decrease_samples, 'b--o', 'ROC plot. Decreasing the sampling time from 1.28 to 0.16 (s)');
 %% plot frequency decrease
 nbr_steps = 4;
 alpha = 0.9;

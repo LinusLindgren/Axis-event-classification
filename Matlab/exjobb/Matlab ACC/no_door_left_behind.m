@@ -1,4 +1,8 @@
 function [ max_neg, new_ratio_neg, min_pos, new_ratio_pos ] = no_door_left_behind(scores_pos_test ,scores_neg_test  )
+%alter the pivot from a value where all positive observations are correctly
+%classified to a value where all negative observations are correctly
+%classified. Store the result true and false accuracy for all the pivots in
+%between
 
 max_neg = max(scores_neg_test);
 i = 0;

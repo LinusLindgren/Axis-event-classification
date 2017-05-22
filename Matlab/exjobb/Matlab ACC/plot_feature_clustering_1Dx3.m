@@ -1,5 +1,7 @@
 function [ ] = plot_feature_clustering_1Dx3( vector1,vector2, vector3,nposfiles,nnegfiles)
-    
+    %plot a image consisting of 3 different subplots. Each subplot consists
+    %of the histogram for positive and negative observations. The three
+    %subplots are based on the features found in vector1, vector2, vector3
     figure;
     subplot(3,1,1)
     nbr_bins_pos = 80;

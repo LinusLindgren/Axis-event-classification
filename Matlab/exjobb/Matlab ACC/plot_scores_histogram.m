@@ -1,6 +1,6 @@
 function [] = plot_scores_histogram(scores_positive_train, scores_negative_train, scores_positive_test, scores_negative_test)
-%PLOT_SCORES_HISTOGRAM Summary of this function goes here
-%   Detailed explanation goes here
+%PLOT_SCORES_HISTOGRAM plot the histogram of the positive and negative
+%scores, one plot for test score and one plot for train score
 
 positive_span_train = max(scores_positive_train)-min(scores_positive_train);
 negative_span_train = max(scores_negative_train)-min(scores_negative_train);

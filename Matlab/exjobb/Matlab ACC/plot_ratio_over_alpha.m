@@ -1,6 +1,6 @@
 function [training_precision, testing_precision] = plot_ratio_over_alpha(min_alpha, max_alpha , attempts, cross_corr_max, sum_auto, min_auto, sum_pauto, min_pauto, auto_bins, auto_corr_flat, nposfiles, nnegfiles, write_svm_model_to_file)
-%PLOT_RATIO_OVER_ALPHA Summary of this function goes here
-%   Detailed explanation goes here
+%PLOT_RATIO_OVER_ALPHA - plot the average train and test ratio as alpha
+%which determines size of partioning is varied
 alphas = min_alpha:0.05:max_alpha;
 count = 1;
 

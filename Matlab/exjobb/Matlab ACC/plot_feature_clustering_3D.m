@@ -1,5 +1,6 @@
 function [] = plot_feature_clustering_3D(vector1, vector2, vector3, nposfiles,nnegfiles)
-
+%plot a 3 dimensional scatter plot based on the features found in vector1,
+%vector2 and vector3
     figure;
     scatter3(vector1(1,nposfiles+1:(nposfiles+nnegfiles)), vector2(1,nposfiles+1:(nposfiles+nnegfiles)), vector3(1,nposfiles+1:(nposfiles+nnegfiles)));
     hold on;

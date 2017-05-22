@@ -3,19 +3,22 @@ function [ psdx_peak_power_ratio, psdx_peak_power_ratio_tilt, psdx_peak_freq_bin
    skewness_psdx, skewness_tilt_psdx, kurtosis_psdx ,kurtosis_tilt_psdx, dft_tilt_k_max_freq, ...
    dft_tilt_k_max_val,dft_samples_k_max_freq, dft_samples_k_max_val, psdx] = extract_dft_features( samples, nposfiles,nnegfiles,nbrOfSamples, target_freq, nbrfiles )
 close all;
+%extract all features related to dft
 
+%calc tilt
 tiltXZ = calc_tilt(samples(:,3,:),samples(:,1,:),nbrOfSamples);
 tiltYZ = calc_tilt(samples(:,3,:),samples(:,2,:),nbrOfSamples);
 tiltXY = calc_tilt(samples(:,2,:),samples(:,1,:),nbrOfSamples);
-
+%calc dft of raw data
 dft_samples = calc_dft(samples,nposfiles,nnegfiles,nbrOfSamples);
 %fix tiltVector
 tiltAsSamp = zeros(nbrOfSamples,3,nposfiles+nnegfiles);
 tiltAsSamp(:,1,:) = tiltXY;
 tiltAsSamp(:,2,:) = tiltXZ;
 tiltAsSamp(:,3,:) = tiltYZ;
+% calc dft of tilt
 dft_tilt = calc_dft(tiltAsSamp,nposfiles,nnegfiles,nbrOfSamples);
-
+%sort the dft values of the raw data
 [sortedValuesSamplesX,sortIndexSamplesX] = sort(dft_samples(:,1,:),'descend');
 [sortedValuesSamplesY,sortIndexSamplesY] = sort(dft_samples(:,2,:),'descend');
 [sortedValuesSamplesZ,sortIndexSamplesZ] = sort(dft_samples(:,3,:),'descend');
@@ -24,13 +27,14 @@ max_k_freq = 5;
 dft_samples_k_max_freq = zeros(max_k_freq,nposfiles+nnegfiles);
 dft_samples_k_max_val = zeros(max_k_freq,nposfiles+nnegfiles);
 
-
+%sort the dft values of the tilt data
 [sortedValuesTiltX,sortIndexTiltX] = sort(dft_tilt(:,1,:),'descend');
 [sortedValuesTiltY,sortIndexTiltY] = sort(dft_tilt(:,2,:),'descend');
 [sortedValuesTiltZ,sortIndexTiltZ] = sort(dft_tilt(:,3,:),'descend');
 dft_tilt_k_max_freq = zeros(max_k_freq,nposfiles+nnegfiles);
 dft_tilt_k_max_val = zeros(max_k_freq,nposfiles+nnegfiles);
-
+% for every observation calculate the max k frequencies for tilt and raw
+% data
 for i = 1 : nposfiles+nnegfiles
         %startIndex = (i-1)*15+1
         for k = 1 : max_k_freq
@@ -49,9 +53,8 @@ for i = 1 : nposfiles+nnegfiles
         end
 end
 
-%calc periodogram using fft
+%calc periodogram using fft for raw data and tilt
 N = nbrOfSamples;
-%xdft = fft(x);
 xdft = dft_samples(1:N/2+1,:,:);
 psdx = (1/(target_freq*N)) * abs(xdft(:,:,:)).^2;
 psdx(2:end-1,:,:) = 2*psdx(2:end-1,:,:);
@@ -60,28 +63,38 @@ xdft_tilt = dft_tilt(1:N/2+1,:,:);
 psdx_tilt = (1/(target_freq*N)) * abs(xdft_tilt(:,:,:)).^2;
 psdx_tilt(2:end-1,:,:) = 2*psdx_tilt(2:end-1,:,:);
 
-%get nbr peaks within 6 db of highest peak
-psdx_nbrPeaks = zeros(3,nbrfiles);
-%hårdkodat fixa senare
-bin_size = 30 * nbrOfSamples/256;
-deci_threshold = 6;
+%convert to decibel
 psdx_deci = 10*log10(psdx);
 psdx_deci_tilt = 10*log10(psdx_tilt);
 
+%create matrix storing nbr peaks within 6 db of highest peak for each
+%dimension
+psdx_nbrPeaks = zeros(3,nbrfiles);
+psdx_nbrPeaks_tilt = zeros(3,nbrfiles);
+
+%create matrix storing ratio of power found in peaks within 6 db of highest peak,(including highest peak),for each dimension
 psdx_peak_power_ratio = zeros(3,nbrfiles);
 psdx_peak_power_ratio_tilt = zeros(3,nbrfiles);
+
+%calc size of bin
+bin_size = 30 * nbrOfSamples/256;
+deci_threshold = 6;
+
+%create matrix consisting of bins covering the distribution of peaks within
+%6 dv of highest peak for each dimension
 psdx_peak_freq_bin = zeros(ceil(size(psdx_deci,1)/bin_size),3,nbrfiles);
 psdx_peak_freq_bin_tilt = zeros(ceil(size(psdx_deci_tilt,1)/bin_size),3,nbrfiles);
 
-psdx_nbrPeaks_tilt = zeros(3,nbrfiles);
-
+%go through all observations
 for i = 1 : nbrfiles
+    %calc peaks
    max_x = max(psdx_deci(:,1,i));
    max_y = max(psdx_deci(:,2,i));
    max_z = max(psdx_deci(:,3,i));
    max_x_tilt = max(psdx_deci_tilt(:,1,i));
    max_y_tilt = max(psdx_deci_tilt(:,2,i));
    max_z_tilt = max(psdx_deci_tilt(:,3,i));
+   %go through periodogram and update all periodogram features
    for j = 1 : size(psdx_deci,1)
        if psdx_deci(j,1,i) > (max_x-deci_threshold)
           psdx_nbrPeaks(1,i) =  psdx_nbrPeaks(1,i) +1;
@@ -119,6 +132,7 @@ for i = 1 : nbrfiles
    
 end
 
+%extract features like kurtosis,mean max sum etc
 psdx_mean = squeeze(mean(psdx,1));
 psdx_max = squeeze(max(psdx,[],1));
 psdx_min = squeeze(min(psdx,[],1));
@@ -134,19 +148,7 @@ psdx_tilt_sum = squeeze(sum(psdx_tilt,1));
 
 skewness_tilt_psdx = squeeze(skewness(psdx_tilt))';
 kurtosis_tilt_psdx = squeeze(kurtosis(psdx_tilt))';
-% freq = 0:target_freq/nbrOfSamples:target_freq/2;
-% 
-% figure
-% plot(freq,10*log10(psdx(:,1,131)))
-% 
-% figure
-% plot(freq,10*log10(psdx(:,1,231)))
-% 
-% figure
-% plot(freq,10*log10(psdx(:,1,631)))
-% 
-% figure
-% plot(freq,10*log10(psdx(:,1,731)))
+
 
 end
 

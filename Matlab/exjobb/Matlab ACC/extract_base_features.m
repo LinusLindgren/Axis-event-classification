@@ -2,19 +2,17 @@ function [meanFeatures, maxFeatures, minFeatures, kurtosis_samples, skewness_sam
     meanTiltFeatures, stdFeatures, stdTiltFeatures, sumAllDimFeatures, maxTiltFeatures, ...
     minTiltFeatures, der_mean, der_max, der_min, der_sum, moments,sum_changes, mean_changes, ...
     sumAbsFeatures, index_of_first_max, index_of_first_min, max_changes, max_changes_index, tiltXY, tiltXZ, tiltYZ] = extract_base_features( samples,nbrOfSamples,nbrfiles )
+%extract basic features like min,max ,derivative, probability measurements
+%et on the raw data
 
-
-
+%calc tilt
 tiltXZ = calc_tilt(samples(:,3,:),samples(:,1,:),nbrOfSamples);
 tiltYZ = calc_tilt(samples(:,3,:),samples(:,2,:),nbrOfSamples);
 tiltXY = calc_tilt(samples(:,2,:),samples(:,1,:),nbrOfSamples);
 
-%plot_samples(samples,nposfiles,nnegfiles,nbrOfSamples);
-
+%calculate a bunch of self explained features
 meanFeatures = squeeze(mean(samples,1));
 meanTiltFeatures = [mean(tiltXY,1); mean(tiltXZ,1) ;mean(tiltYZ,1)];
-
-
 stdFeatures =  squeeze(std(samples,0,1));
 stdTiltFeatures =  [std(tiltXY,0,1); std(tiltXZ,0,1) ;std(tiltYZ,0,1)];
 sumFeatures = squeeze(sum(samples,1));
@@ -32,6 +30,8 @@ minTiltFeatures = [min(tiltXY,[],1); min(tiltXZ,[],1) ;min(tiltYZ,[],1)];
 skewness_samples = squeeze(skewness(samples))';
 kurtosis_samples = squeeze(kurtosis(samples))';
 
+%calculate the discrete derivative of the raw data and extract features
+%based on the sum of absolute changes
 sum_changes = zeros(3,nbrfiles);
 mean_changes = zeros(3,nbrfiles);
 changes = zeros(3,nbrOfSamples-1,nbrfiles);

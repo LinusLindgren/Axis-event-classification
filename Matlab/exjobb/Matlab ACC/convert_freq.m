@@ -1,5 +1,6 @@
 function [ samples_out, nbr_of_samples] = convert_freq( samples, freq_in, freq_out )
-
+%convert an observation from a frequency to a lower frequency by simply
+%skipping samples. Therefore only work for compatible frequency transforms
 
 step_length = floor(freq_in / freq_out);
 nbr_of_steps = size(samples,1)/ step_length;

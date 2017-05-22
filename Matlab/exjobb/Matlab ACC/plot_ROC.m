@@ -1,9 +1,8 @@
 function [] = plot_ROC( true_positive, false_positive,color, plot_title)
-%PLOT_ROC Summary of this function goes here
-%   Detailed explanation goes here
+%PLOT_ROC - create ROC plot consisting of the dots found in true_positive
+%and false_positive
 limits = [0 1 0 1]
 figure;
-%plot(false_positive,true_positive, color);
 scatter(false_positive,true_positive,'filled');
 
 title(plot_title);
